@@ -1,0 +1,58 @@
+schema_version: 0.5.0
+record_type: regenerative_cycle_audit_record
+audit_id: audit:2026-07-31:before-receipt-001
+execution_receipt_id: execution-receipt:2026-07-31:cache-seed-001
+plan_id: reintegration-plan:2026-07-31:cache-seed-001
+residual_id: residual:2026-07-31:route-cache-001
+audited_at: '2026-07-31T10:00:00+09:00'
+auditor:
+  auditor_id: service:independent-cycle-auditor-01
+  auditor_type: audit_service
+  independence: separated_duties
+  authority_scope_refs:
+  - authority-scope:audit:regional-cache
+evidence_refs:
+- execution-receipt:2026-07-31:cache-seed-001
+- authorization-receipt:cache-seed-20260731-001
+- trace:reintegration:cache-seed-001
+- metric:route-cache-avoided-tokens-001
+authorization_verification:
+  request_match: true
+  receipt_verified: true
+  decision_valid: true
+  scope_match: true
+  time_valid: true
+execution_verification:
+  plan_match: true
+  target_match: true
+  operations_match: true
+  provenance_match: true
+  integrity_match: true
+  status_match: true
+contamination_assessment:
+  status: clean
+  contamination_refs: []
+  propagation_scope: none
+  isolation_status: not_required
+benefit_verification:
+  status: verified
+  verified_metrics:
+  - metric_name: avoided_tokens_per_query
+    verification_status: verified
+    observed_value: 438
+    unit: tokens
+    evidence_ref: metric:route-cache-avoided-tokens-001
+  - metric_name: latency_reduction
+    verification_status: verified
+    observed_value: 82
+    unit: ms
+    evidence_ref: metric:route-cache-latency-001
+findings: []
+audit_conclusion:
+  result: passed
+  recommended_control: continue
+  rationale: Authorization, scope, provenance, integrity, and benefit evidence were
+    verified.
+audit_integrity:
+  algorithm: sha256
+  digest: '5111111111111111111111111111111111111111111111111111111111111111'
