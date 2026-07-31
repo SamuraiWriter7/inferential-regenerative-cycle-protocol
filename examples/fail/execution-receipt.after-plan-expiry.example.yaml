@@ -1,0 +1,91 @@
+schema_version: 0.4.0
+record_type: regenerative_cycle_execution_receipt
+receipt_id: execution-receipt:fail:after-plan-expiry
+plan_id: reintegration-plan:2026-07-31:cache-seed-001
+residual_id: residual:2026-07-31:route-cache-001
+assessment_id: assessment:2026-07-31:route-cache-001
+source_inference_id: inference:2026-07-31:route-cache-build-001
+recorded_at: '2026-08-11T11:10:00+09:00'
+authorization_binding:
+  authorization_request_ref: authorization-request:cache-seed-20260731-001
+  authorization_receipt_ref: authorization-receipt:cache-seed-20260731-001
+  decision: authorized
+  authorized_at: '2026-07-31T10:40:00+09:00'
+  authorizer_id: service:reintegration-authority-01
+  authorized_operations:
+  - read
+  - transform
+  - cache
+  authorized_environment: isolated_runtime
+  authorized_scope:
+  - cache.write:regional-route-features-01
+  expires_at: '2026-08-11T12:00:00+09:00'
+execution:
+  execution_id: execution:2026-07-31:cache-seed-001
+  executor:
+    executor_id: service:regional-cache-writer-01
+    executor_type: execution_service
+    runtime_id: runtime:cache-seed-20260731-001
+    node_id: node:tokyo-edge-07
+  started_at: '2026-08-11T10:45:00+09:00'
+  completed_at: '2026-08-11T11:00:00+09:00'
+  status: completed
+  operations_performed:
+  - read
+  - transform
+  - cache
+  use_count: 1
+  cycle_depth: 1
+  input_integrity:
+    algorithm: sha256
+    digest: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  output_ref: artifact:route-cache-seed-20260731-001
+  output_integrity:
+    algorithm: sha256
+    digest: "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+target_observation:
+  target_type: retrieval_cache
+  target_id: cache:regional-route-features-01
+  reuse_mode: cache_seed
+  target_update_status: applied
+  before_state_ref: context:regional-route-cache-state-001
+  after_state_ref: context:regional-route-cache-state-002
+provenance_observation:
+  origin_refs:
+  - origin:request:regional-route-cache-001
+  trace_refs:
+  - trace:inference:route-cache-build-001
+  generated_trace_refs:
+  - trace:reintegration:cache-seed-001
+  preserve_origin_chain: true
+scope_observation:
+  environment: isolated_runtime
+  node_id: node:tokyo-edge-07
+  geographic_scope:
+  - JP-KANTO
+safety_observation:
+  contamination_scan_result: clean
+  triggered_halt_conditions: []
+  rollback_status: available
+  unauthorized_effects_detected: false
+benefit_realization:
+  status: realized
+  benefit_types:
+  - reduced_computation
+  - reduced_latency
+  observed_metrics:
+  - metric_name: avoided_tokens_per_query
+    value: 438
+    unit: tokens
+    measurement_ref: metric:route-cache-avoided-tokens-001
+  - metric_name: latency_reduction
+    value: 82
+    unit: ms
+    measurement_ref: metric:route-cache-latency-001
+outcome:
+  audit_required: true
+  next_action: submit_for_audit
+  outcome_summary: The approved cache seed was applied within the authorized scope.
+receipt_integrity:
+  algorithm: sha256
+  digest: "2111111111111111111111111111111111111111111111111111111111111111"
