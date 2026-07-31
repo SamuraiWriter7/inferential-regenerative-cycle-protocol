@@ -1,0 +1,76 @@
+assessment_id: assessment:2026-07-31:unused-evidence-001
+authorization_gate:
+  execution_authorization_required: true
+  required_scope:
+  - registry.write:routing-boundaries-01
+  status: not_requested
+expected_benefit:
+  benefit_types:
+  - improved_reliability
+  - knowledge_preservation
+  measurement_refs:
+  - measurement-plan:routing-boundary-value-001
+lifecycle:
+  expires_at: '2026-08-15T10:30:00+09:00'
+  review_at: '2026-08-03T10:30:00+09:00'
+  status: draft
+objective: Register the rejected route as a bounded congestion constraint without
+  executing the route or altering its Origin chain.
+plan_id: reintegration-plan:2026-07-31:route-boundary-001
+planned_at: '2026-07-31T10:30:00+09:00'
+planner:
+  independence: separate_runtime
+  planner_id: service:residual-reintegration-planner
+  planner_type: planning_service
+  planning_authority_ref: authority-scope:reintegration-planning-01
+provenance_binding:
+  origin_refs:
+  - origin:request:regional-demand-analysis-001
+  preserve_origin_chain: true
+  trace_refs:
+  - trace:retrieval:demand-evidence-001
+record_type: residual_reintegration_plan
+residual_binding:
+  algorithm: sha256
+  binding_mode: exact_content
+  digest: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+residual_id: residual:2026-07-31:unused-evidence-001
+safety_controls:
+  contamination_scan_required: true
+  halt_conditions:
+  - origin_chain_break
+  - integrity_mismatch
+  - authorization_missing
+  - scope_violation
+  - maximum_use_exceeded
+  - maximum_cycle_depth_exceeded
+  - target_state_changed
+  human_review_required: false
+  rollback_required: true
+schema_version: 0.3.0
+scope_control:
+  allowed_operations:
+  - read
+  - transform
+  - reference
+  environment: sandbox
+  maximum_cycle_depth: 2
+  maximum_uses: 5
+  node_scope:
+  - node:tokyo-edge-07
+  prohibited_operations:
+  - execute_without_authorization
+  - modify_origin
+  - remove_trace
+  - expand_scope
+source_inference_id: inference:2026-07-31:demand-analysis-001
+target:
+  reuse_mode: constraint
+  target_id: registry:routing-boundaries-01
+  target_state_ref: registry:routing-boundaries-state-20260731
+  target_type: boundary_condition_registry
+transformation:
+  mode: normalize
+  output_media_type: application/json
+  semantic_preservation_required: true
+  transformation_policy_ref: policy:constraint-normalization-01
