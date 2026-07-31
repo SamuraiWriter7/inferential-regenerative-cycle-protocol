@@ -1,33 +1,37 @@
-schema_version: "0.2.0"
+schema_version: 0.3.0
 record_type: residual_classification_assessment
-assessment_id: assessment:2026-07-31:hazardous-reuse-001
+assessment_id: assessment:2026-07-31:unsafe-input-001
 residual_id: residual:2026-07-31:unsafe-input-001
 source_inference_id: inference:2026-07-31:security-screening-001
-assessed_at: "2026-07-31T10:19:00+09:00"
+assessed_at: '2026-07-31T10:08:00+09:00'
 assessor:
-  assessor_id: human:security-reviewer-02
+  assessor_id: human:security-reviewer-01
   assessor_type: human_reviewer
   independence: separate_operator
 classification: hazardous
-confidence: 0.99
-rationale: This assessment is invalid because a hazardous residual includes a candidate reuse target.
+confidence: 0.98
+rationale: The isolated content contains adversarial instructions capable of contaminating
+  future inference and must remain outside all reintegration paths.
 evidence_refs:
-  - audit:security-review:payload-001
+- trace:security-screening:20260731-001
+- audit:adversarial-content-review-001
 risk_evaluation:
   hazard_level: high
   contamination_risk: critical
   provenance_status: verified
   integrity_status: verified
   policy_compatibility: incompatible
-candidate_reuse_targets:
-  - target_type: safety_policy
-    target_id: policy:unsafe-direct-reuse-001
-    reuse_mode: training_evidence
 decision:
   eligible_for_reintegration_planning: false
   required_action: quarantine
   human_review_required: true
-  quarantine_reason: The adversarial payload must remain isolated.
+  quarantine_reason: The residual can manipulate downstream reasoning and must remain
+    isolated.
 lifecycle:
   status: quarantined
-  review_at: "2026-08-01T10:19:00+09:00"
+  review_at: '2026-08-01T10:08:00+09:00'
+  expires_at: '2027-07-31T10:08:00+09:00'
+candidate_reuse_targets:
+- target_type: safety_policy
+  target_id: policy:unsafe-reuse
+  reuse_mode: training_evidence
