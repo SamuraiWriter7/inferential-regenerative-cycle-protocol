@@ -1,0 +1,36 @@
+schema_version: "0.3.0"
+record_type: residual_classification_assessment
+assessment_id: assessment:2026-07-31:thermal-output-001
+residual_id: residual:2026-07-31:thermal-output-001
+source_inference_id: inference:2026-07-31:gpu-workload-001
+assessed_at: "2026-07-31T10:04:00+09:00"
+assessor:
+  assessor_id: service:thermal-recovery-assessment
+  assessor_type: assessment_service
+  independence: separate_runtime
+classification: recoverable
+confidence: 0.88
+rationale: The measured heat stream is within the accepted temperature and pressure range for the local recovery loop and has verified telemetry.
+evidence_refs:
+  - trace:thermal:gpu-rack-01
+  - metric:thermal-quality-20260731-001
+risk_evaluation:
+  hazard_level: low
+  contamination_risk: none
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: conditional
+candidate_reuse_targets:
+  - target_type: physical_recovery_system
+    target_id: system:district-heating-loop-01
+    reuse_mode: thermal_recovery
+decision:
+  eligible_for_reintegration_planning: true
+  required_action: approve_for_planning
+  human_review_required: true
+  reuse_constraints:
+    - Confirm live inlet temperature before opening the recovery valve.
+lifecycle:
+  status: active
+  review_at: "2026-08-01T10:04:00+09:00"
+  expires_at: "2026-08-31T10:04:00+09:00"
