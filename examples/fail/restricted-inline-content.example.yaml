@@ -1,0 +1,48 @@
+schema_version: "0.1.0"
+record_type: inference_residual_record
+
+residual_id: residual:2026-07-31:restricted-inline-001
+source_inference_id: inference:2026-07-31:confidential-analysis-001
+
+origin_refs:
+  - origin:document:restricted-document-001
+
+created_at: "2026-07-31T09:44:00+09:00"
+
+producer:
+  producer_id: service:confidential-analysis-service
+  producer_type: inference_service
+
+residual_category: unused_evidence
+residual_form: data
+
+summary: >-
+  This record is invalid because restricted information is stored
+  directly inside the record.
+
+content_reference:
+  reference_type: inline_text
+  value: This is restricted information and must not be stored inline.
+  media_type: text/plain
+  encoding: utf-8
+
+sensitivity: restricted
+
+integrity:
+  algorithm: sha256
+  digest: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
+retention:
+  retention_class: evidence
+
+safety:
+  potential_hazard: medium
+  contains_personal_data: true
+  contains_secrets: false
+  contains_untrusted_input: false
+  requires_human_review: true
+
+preliminary_processing:
+  disposition: quarantined
+  reuse_eligible: false
+  reason: Restricted content requires external protected storage.
