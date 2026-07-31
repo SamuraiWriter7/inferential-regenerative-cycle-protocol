@@ -1,0 +1,51 @@
+schema_version: "0.5.0"
+record_type: regenerative_cycle_audit_record
+audit_id: audit:2026-07-31:thermal-recovery-001
+execution_receipt_id: execution-receipt:2026-07-31:thermal-recovery-001
+plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
+residual_id: residual:2026-07-31:thermal-output-001
+audited_at: "2026-07-31T12:05:00+09:00"
+auditor:
+  auditor_id: human:facility-energy-auditor-01
+  auditor_type: human_auditor
+  independence: separated_duties
+  authority_scope_refs: [authority-scope:audit:thermal-recovery]
+evidence_refs:
+  - execution-receipt:2026-07-31:thermal-recovery-001
+  - authorization-receipt:thermal-recovery-20260731-001
+  - trace:reintegration:thermal-recovery-001
+  - metric:recovered-heat-kwh-001
+authorization_verification:
+  request_match: true
+  receipt_verified: true
+  decision_valid: true
+  scope_match: true
+  time_valid: true
+execution_verification:
+  plan_match: true
+  target_match: true
+  operations_match: true
+  provenance_match: true
+  integrity_match: true
+  status_match: true
+contamination_assessment:
+  status: clean
+  contamination_refs: []
+  propagation_scope: none
+  isolation_status: not_required
+benefit_verification:
+  status: verified
+  verified_metrics:
+    - metric_name: recovered_heat
+      verification_status: verified
+      observed_value: 31.8
+      unit: kWh_thermal
+      evidence_ref: metric:recovered-heat-kwh-001
+findings: []
+audit_conclusion:
+  result: passed
+  recommended_control: continue
+  rationale: The thermal transfer remained authorized, measurable, bounded, and uncontaminated.
+audit_integrity:
+  algorithm: sha256
+  digest: "5333333333333333333333333333333333333333333333333333333333333333"
