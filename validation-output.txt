@@ -1,7 +1,8 @@
-=== Inferential Regenerative Cycle Protocol v0.3 Validation ===
+=== Inferential Regenerative Cycle Protocol v0.4 Validation ===
 schema [inference-residual-record]: schemas/inference-residual-record.schema.json
 schema [residual-classification-assessment]: schemas/residual-classification-assessment.schema.json
 schema [residual-reintegration-plan]: schemas/residual-reintegration-plan.schema.json
+schema [regenerative-cycle-execution-receipt]: schemas/regenerative-cycle-execution-receipt.schema.json
 
 [validate-pass] examples/pass/inference-residual-record.cache-candidate.example.yaml
 [schema-ok]
@@ -24,6 +25,18 @@ schema [residual-reintegration-plan]: schemas/residual-reintegration-plan.schema
 [semantic-ok]
 
 [validate-pass] examples/pass/inference-residual-record.unused-evidence.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-execution-receipt.cache-seed-completed.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-execution-receipt.route-boundary-halted.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-execution-receipt.thermal-recovery-completed.example.yaml
 [schema-ok]
 [semantic-ok]
 
@@ -67,6 +80,83 @@ schema [residual-reintegration-plan]: schemas/residual-reintegration-plan.schema
 [schema-ok]
 [expected-semantic-error]
   - lifecycle.review_at: required for dormant classification
+
+[validate-fail] examples/fail/execution-receipt.after-plan-expiry.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.started_at: cannot occur after referenced plan expiration
+  - execution.completed_at: cannot occur after referenced plan expiration
+
+[validate-fail] examples/fail/execution-receipt.authorization-expired-during-execution.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - authorization_binding.expires_at: authorization must remain valid through execution completion
+
+[validate-fail] examples/fail/execution-receipt.authorization-request-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - authorization_binding.authorization_request_ref: must match the referenced plan
+
+[validate-fail] examples/fail/execution-receipt.completed-with-halt.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - safety_observation.triggered_halt_conditions: completed execution cannot contain a halt condition
+
+[validate-fail] examples/fail/execution-receipt.contamination-failed-but-completed.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.status: cannot be completed when contamination scan failed
+  - safety_observation.contamination_scan_result: failed scan prohibits completed status
+  - outcome.next_action: failed contamination scan requires containment action
+
+[validate-fail] examples/fail/execution-receipt.controlled-production-without-human-review.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - safety_observation.human_review_ref: required by referenced plan
+
+[validate-fail] examples/fail/execution-receipt.halted-without-condition.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - safety_observation.triggered_halt_conditions: halted execution requires at least one halt condition
+
+[validate-fail] examples/fail/execution-receipt.input-integrity-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.input_integrity.digest: must match the referenced plan residual binding
+  - execution.input_integrity.digest: must match referenced residual integrity
+
+[validate-fail] examples/fail/execution-receipt.maximum-use-exceeded.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.use_count: exceeds referenced plan maximum_uses
+
+[validate-fail] examples/fail/execution-receipt.node-scope-violation.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - scope_observation.node_id: outside referenced plan node_scope
+
+[validate-fail] examples/fail/execution-receipt.operation-outside-plan.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.operations_performed: contains an operation outside the referenced plan
+  - execution.operations_performed: contains an operation outside the authorization receipt
+
+[validate-fail] examples/fail/execution-receipt.target-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - target_observation: must exactly match the referenced plan target
+
+[validate-fail] examples/fail/execution-receipt.unauthorized-effects-completed.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution.status: cannot be completed when unauthorized effects were detected
+  - safety_observation.unauthorized_effects_detected: completed status is prohibited
+  - outcome.next_action: unauthorized effects require investigate or suspend_cycle
+
+[validate-fail] examples/fail/execution-receipt.unknown-plan.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - plan_id: unknown referenced plan 'reintegration-plan:does-not-exist'
 
 [validate-fail] examples/fail/hazardous-with-reuse-target.example.yaml
 [schema-ok]
