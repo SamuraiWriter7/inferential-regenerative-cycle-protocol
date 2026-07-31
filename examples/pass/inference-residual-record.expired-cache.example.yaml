@@ -1,31 +1,32 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 record_type: inference_residual_record
 residual_id: residual:2026-07-31:expired-cache-001
-source_inference_id: inference:2026-07-31:cache-refresh-001
+source_inference_id: inference:2026-07-31:legacy-cache-review-001
 origin_refs:
-  - origin:task:cache-refresh-001
+  - origin:cache:legacy-routing-001
 trace_refs:
-  - trace:cache:refresh-001
-created_at: "2026-07-31T10:05:00+09:00"
+  - trace:cache:legacy-routing-001
+created_at: "2026-07-31T09:40:00+09:00"
 producer:
-  producer_id: service:cache-management-service
+  producer_id: service:cache-maintenance-service
   producer_type: inference_service
-  node_id: node:fukuoka-edge-04
+  node_id: node:tokyo-edge-04
 residual_category: cache_candidate
-residual_form: computation
-summary: A cache candidate whose source data has been superseded and should not be reused.
+residual_form: data
+summary: An obsolete cache artifact with no supported target environment.
 content_reference:
   reference_type: artifact_id
-  value: artifact:expired-cache-entry-001
+  value: artifact:legacy-route-cache-001
   media_type: application/json
   encoding: json
 sensitivity: internal
 integrity:
   algorithm: sha256
-  digest: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  digest: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 retention:
   retention_class: ephemeral
-  expires_at: "2026-08-01T10:05:00+09:00"
+  review_at: "2026-08-01T09:40:00+09:00"
+  expires_at: "2026-08-31T09:40:00+09:00"
   legal_hold: false
 safety:
   potential_hazard: low
@@ -34,6 +35,7 @@ safety:
   contains_untrusted_input: false
   requires_human_review: false
 preliminary_processing:
-  disposition: discard_requested
+  disposition: pending_assessment
   classification_eligible: true
-  reason: A formal discardable classification is required before deletion.
+  reason: The artifact requires formal classification before disposal.
+  next_assessment_after: "2026-07-31T09:50:00+09:00"
