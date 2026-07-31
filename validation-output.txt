@@ -1,8 +1,23 @@
-=== Inferential Regenerative Cycle Protocol v0.4 Validation ===
+=== Inferential Regenerative Cycle Protocol v0.5 Validation ===
 schema [inference-residual-record]: schemas/inference-residual-record.schema.json
 schema [residual-classification-assessment]: schemas/residual-classification-assessment.schema.json
 schema [residual-reintegration-plan]: schemas/residual-reintegration-plan.schema.json
 schema [regenerative-cycle-execution-receipt]: schemas/regenerative-cycle-execution-receipt.schema.json
+schema [regenerative-cycle-audit-record]: schemas/regenerative-cycle-audit-record.schema.json
+schema [cycle-stability-assessment]: schemas/cycle-stability-assessment.schema.json
+schema [regenerative-cycle-control-receipt]: schemas/regenerative-cycle-control-receipt.schema.json
+
+[validate-pass] examples/pass/cycle-stability-assessment.cache-stable.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/cycle-stability-assessment.route-closed.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/cycle-stability-assessment.thermal-conditional.example.yaml
+[schema-ok]
+[semantic-ok]
 
 [validate-pass] examples/pass/inference-residual-record.cache-candidate.example.yaml
 [schema-ok]
@@ -25,6 +40,30 @@ schema [regenerative-cycle-execution-receipt]: schemas/regenerative-cycle-execut
 [semantic-ok]
 
 [validate-pass] examples/pass/inference-residual-record.unused-evidence.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-audit-record.cache-seed-passed.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-audit-record.route-boundary-conditional.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-audit-record.thermal-passed.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-control-receipt.cache-continue.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-control-receipt.route-close.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/regenerative-cycle-control-receipt.thermal-continue.example.yaml
 [schema-ok]
 [semantic-ok]
 
@@ -75,6 +114,67 @@ schema [regenerative-cycle-execution-receipt]: schemas/regenerative-cycle-execut
 [validate-pass] examples/pass/residual-reintegration-plan.thermal-recovery.example.yaml
 [schema-ok]
 [semantic-ok]
+
+[validate-fail] examples/fail/audit-record.before-execution-receipt.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - audited_at: cannot be earlier than referenced execution receipt
+
+[validate-fail] examples/fail/audit-record.confirmed-contamination-passed.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - audit_conclusion.result: confirmed contamination requires failed
+  - audit_conclusion.recommended_control: confirmed contamination requires suspend or roll_back
+  - contamination_assessment.status: passed audit requires clean
+
+[validate-fail] examples/fail/audit-record.failed-recommends-continue.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - audit_conclusion.recommended_control: failed audit cannot continue or close normally
+
+[validate-fail] examples/fail/audit-record.passed-with-scope-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - authorization_verification: every verification must be true for passed audit
+
+[validate-fail] examples/fail/audit-record.unknown-execution-receipt.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - execution_receipt_id: unknown referenced execution receipt 'execution-receipt:2026-07-31:missing-001'
+
+[validate-fail] examples/fail/control-receipt.close-missing-archive.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - required_actions: close requires archive_cycle
+
+[validate-fail] examples/fail/control-receipt.continue-missing-monitor.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - required_actions: continue requires monitor
+
+[validate-fail] examples/fail/control-receipt.decision-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - decision: must match the referenced stability recommended_action
+
+[validate-fail] examples/fail/control-receipt.rollback-without-authorization.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - decision: must match the referenced stability recommended_action
+  - decision: roll_back requires unstable or critical
+  - authorization_binding.required: rollback execution requires authorization
+
+[validate-fail] examples/fail/control-receipt.suspend-missing-freeze.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - decision: must match the referenced stability recommended_action
+  - decision: suspend requires unstable or critical
+  - required_actions: suspend requires freeze_reintegration
+
+[validate-fail] examples/fail/control-receipt.target-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - control_scope.target_id: must match referenced execution target
 
 [validate-fail] examples/fail/dormant-without-review.example.yaml
 [schema-ok]
@@ -251,6 +351,32 @@ schema [regenerative-cycle-execution-receipt]: schemas/regenerative-cycle-execut
 [schema-ok]
 [expected-semantic-error]
   - assessment_id: unknown referenced assessment 'assessment:2026-07-31:does-not-exist-001'
+
+[validate-fail] examples/fail/stability-assessment.broken-provenance-stable.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - evaluation.stability_status: broken continuity or confirmed contamination requires critical
+  - evaluation.violated_thresholds: stable status requires no violations
+
+[validate-fail] examples/fail/stability-assessment.conditional-continue-without-reassessment.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - reassessment.required: conditionally_stable continuation requires reassessment
+
+[validate-fail] examples/fail/stability-assessment.critical-recommends-continue.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - recommended_action: critical cycle requires suspend or roll_back
+
+[validate-fail] examples/fail/stability-assessment.depth-violation-not-declared.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - evaluation.violated_thresholds: missing detected violation 'cycle_depth'
+
+[validate-fail] examples/fail/stability-assessment.unknown-audit.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - audit_id: unknown referenced audit 'audit:2026-07-31:missing-001'
 
 [validate-fail] examples/fail/unknown-residual-reference.example.yaml
 [schema-ok]
