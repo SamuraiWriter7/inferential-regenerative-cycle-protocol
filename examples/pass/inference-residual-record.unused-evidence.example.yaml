@@ -1,4 +1,4 @@
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 record_type: inference_residual_record
 residual_id: residual:2026-07-31:unused-evidence-001
 source_inference_id: inference:2026-07-31:demand-analysis-001
@@ -22,7 +22,7 @@ content_reference:
 sensitivity: internal
 integrity:
   algorithm: sha256
-  digest: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  digest: "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
 retention:
   retention_class: operational
   review_at: "2026-08-31T09:36:00+09:00"
