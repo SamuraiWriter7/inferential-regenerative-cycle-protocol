@@ -1,37 +1,30 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 record_type: residual_classification_assessment
 assessment_id: assessment:2026-07-31:unused-evidence-001
 residual_id: residual:2026-07-31:unused-evidence-001
-source_inference_id: inference:2026-07-31:market-analysis-001
-assessed_at: "2026-07-31T09:46:00+09:00"
+source_inference_id: inference:2026-07-31:demand-analysis-001
+assessed_at: "2026-07-31T10:06:00+09:00"
 assessor:
-  assessor_id: agent:evidence-review-agent-01
-  assessor_type: ai_agent
+  assessor_id: service:residual-assessment-service
+  assessor_type: assessment_service
   independence: separate_runtime
 classification: dormant
-confidence: 0.78
-rationale: The evidence is intact but lacks sufficient corroboration for present reuse and should remain available for later review.
+confidence: 0.81
+rationale: The evidence is intact but no currently approved target can use it without changing the original analytical context.
 evidence_refs:
-  - trace:retrieval:market-analysis-001
-  - artifact:unused-evidence-20260731-001
+  - trace:retrieval:demand-evidence-001
+  - audit:unused-evidence-integrity-001
 risk_evaluation:
   hazard_level: low
   contamination_risk: low
-  provenance_status: partial
+  provenance_status: verified
   integrity_status: verified
-  policy_compatibility: conditional
-  risk_notes: Future use requires corroboration from an independent source.
-candidate_reuse_targets:
-  - target_type: future_inference_context
-    target_id: context:future-market-review-001
-    reuse_mode: contextual_reference
+  policy_compatibility: unknown
 decision:
   eligible_for_reintegration_planning: false
   required_action: retain_dormant
   human_review_required: false
-  reuse_constraints:
-    - Do not use until independent corroboration is recorded.
 lifecycle:
   status: awaiting_review
-  review_at: "2026-09-01T09:46:00+09:00"
-  expires_at: "2027-07-31T09:46:00+09:00"
+  review_at: "2026-08-31T10:06:00+09:00"
+  expires_at: "2026-12-31T10:06:00+09:00"
