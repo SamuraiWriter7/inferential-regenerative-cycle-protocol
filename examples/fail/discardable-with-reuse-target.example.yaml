@@ -1,0 +1,32 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+assessment_id: assessment:2026-07-31:discardable-reuse-001
+residual_id: residual:2026-07-31:expired-cache-001
+source_inference_id: inference:2026-07-31:cache-refresh-001
+assessed_at: "2026-07-31T10:20:00+09:00"
+assessor:
+  assessor_id: service:cache-assessment-service-02
+  assessor_type: assessment_service
+  independence: separate_runtime
+classification: discardable
+confidence: 0.95
+rationale: This assessment is invalid because discardable material cannot name a future reuse target.
+evidence_refs:
+  - trace:cache:refresh-001
+risk_evaluation:
+  hazard_level: low
+  contamination_risk: medium
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: incompatible
+candidate_reuse_targets:
+  - target_type: retrieval_cache
+    target_id: cache:future-cache-001
+    reuse_mode: cache_seed
+decision:
+  eligible_for_reintegration_planning: false
+  required_action: discard
+  human_review_required: false
+  discard_reason: The cache is stale and has no legitimate future use.
+lifecycle:
+  status: awaiting_disposal
