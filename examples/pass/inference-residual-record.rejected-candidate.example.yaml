@@ -1,0 +1,65 @@
+schema_version: "0.1.0"
+record_type: inference_residual_record
+
+residual_id: residual:2026-07-31:rejected-candidate-001
+source_inference_id: inference:2026-07-31:route-planning-001
+
+origin_refs:
+  - origin:request:regional-load-balancing-001
+
+trace_refs:
+  - trace:inference:route-planning-001
+  - trace:candidate:route-b-001
+
+created_at: "2026-07-31T09:30:00+09:00"
+
+producer:
+  producer_id: agent:regional-routing-agent-01
+  producer_type: ai_agent
+  node_id: node:tokyo-edge-07
+  model_id: local-routing-model-2.1
+  runtime_id: runtime:route-cycle-20260731-001
+
+residual_category: rejected_candidate
+residual_form: data
+
+summary: >-
+  A rejected routing candidate that avoided an overloaded compute node
+  but exceeded the permitted transfer latency.
+
+content_reference:
+  reference_type: artifact_id
+  value: artifact:route-candidate-b-20260731-001
+  media_type: application/yaml
+  encoding: yaml
+
+sensitivity: internal
+
+integrity:
+  algorithm: sha256
+  digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+retention:
+  retention_class: operational
+  review_at: "2026-08-07T09:30:00+09:00"
+  expires_at: "2026-10-31T09:30:00+09:00"
+  legal_hold: false
+
+safety:
+  potential_hazard: low
+  contains_personal_data: false
+  contains_secrets: false
+  contains_untrusted_input: false
+  requires_human_review: false
+
+preliminary_processing:
+  disposition: pending_assessment
+  reuse_eligible: true
+  reason: >-
+    The candidate may provide a useful boundary condition for future
+    routing decisions under similar congestion.
+  next_assessment_after: "2026-08-07T09:30:00+09:00"
+
+extensions:
+  x-five-phase-origin: fire
+  x-expected-next-phase: metal
