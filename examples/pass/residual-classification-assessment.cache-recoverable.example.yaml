@@ -1,0 +1,36 @@
+schema_version: "0.3.0"
+record_type: residual_classification_assessment
+assessment_id: assessment:2026-07-31:route-cache-001
+residual_id: residual:2026-07-31:route-cache-001
+source_inference_id: inference:2026-07-31:route-cache-build-001
+assessed_at: "2026-07-31T10:02:00+09:00"
+assessor:
+  assessor_id: service:residual-assessment-service
+  assessor_type: assessment_service
+  independence: separate_runtime
+classification: recoverable
+confidence: 0.90
+rationale: The intermediate route features are intact, provenance-complete, and suitable for a bounded cache that reduces repeated computation.
+evidence_refs:
+  - trace:inference:route-cache-build-001
+  - audit:route-cache-integrity-001
+risk_evaluation:
+  hazard_level: low
+  contamination_risk: low
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: compatible
+candidate_reuse_targets:
+  - target_type: retrieval_cache
+    target_id: cache:regional-route-features-01
+    reuse_mode: cache_seed
+decision:
+  eligible_for_reintegration_planning: true
+  required_action: approve_for_planning
+  human_review_required: false
+  reuse_constraints:
+    - Limit cache use to the regional routing domain.
+lifecycle:
+  status: active
+  review_at: "2026-08-10T10:02:00+09:00"
+  expires_at: "2026-09-15T10:02:00+09:00"
