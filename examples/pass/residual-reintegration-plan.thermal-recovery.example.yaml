@@ -1,0 +1,80 @@
+schema_version: "0.3.0"
+record_type: residual_reintegration_plan
+plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
+residual_id: residual:2026-07-31:thermal-output-001
+assessment_id: assessment:2026-07-31:thermal-output-001
+source_inference_id: inference:2026-07-31:gpu-workload-001
+planned_at: "2026-07-31T10:34:00+09:00"
+planner:
+  planner_id: human:facility-energy-planner-01
+  planner_type: human_planner
+  independence: separate_operator
+  planning_authority_ref: authority-scope:thermal-recovery-planning-01
+objective: Route verified GPU cooling-loop heat into the district heating exchanger within the approved temperature and flow envelope.
+target:
+  target_type: physical_recovery_system
+  target_id: system:district-heating-loop-01
+  reuse_mode: thermal_recovery
+  target_state_ref: system:district-heating-state-20260731
+residual_binding:
+  algorithm: sha256
+  digest: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  binding_mode: exact_content
+provenance_binding:
+  origin_refs:
+    - origin:workload:regional-forecast-001
+  trace_refs:
+    - trace:workload:regional-forecast-001
+    - trace:thermal:gpu-rack-01
+  preserve_origin_chain: true
+transformation:
+  mode: convert
+  semantic_preservation_required: true
+  output_media_type: application/vnd.kazene.thermal-control+json
+  transformation_policy_ref: policy:thermal-control-conversion-01
+scope_control:
+  allowed_operations:
+    - read
+    - transform
+    - transfer
+  prohibited_operations:
+    - execute_without_authorization
+    - modify_origin
+    - remove_trace
+    - expand_scope
+  maximum_uses: 1
+  maximum_cycle_depth: 1
+  environment: controlled_production
+  geographic_scope:
+    - JP-KANSAI
+  node_scope:
+    - node:regional-compute-site-01
+safety_controls:
+  human_review_required: true
+  contamination_scan_required: true
+  rollback_required: true
+  halt_conditions:
+    - origin_chain_break
+    - integrity_mismatch
+    - authorization_missing
+    - scope_violation
+    - target_state_changed
+    - human_stop_requested
+  reviewer_role: facility_energy_operator
+authorization_gate:
+  execution_authorization_required: true
+  status: requested
+  required_scope:
+    - thermal.transfer:district-heating-loop-01
+  authorization_request_ref: authorization-request:thermal-recovery-20260731-001
+expected_benefit:
+  benefit_types:
+    - thermal_recovery
+  measurement_refs:
+    - measurement-plan:recovered-heat-kwh-001
+  estimated_value: 32.5
+  value_unit: kWh_thermal
+lifecycle:
+  status: ready_for_authorization
+  review_at: "2026-07-31T12:00:00+09:00"
+  expires_at: "2026-08-01T10:34:00+09:00"
