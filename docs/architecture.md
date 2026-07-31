@@ -2,118 +2,132 @@
 
 ## 1. Purpose
 
-The Inferential Regenerative Cycle Protocol defines how residual
-resources produced by AI inference cycles can be recorded, evaluated,
-recovered, and safely reintegrated.
+The Inferential Regenerative Cycle Protocol governs the path from residual observation to controlled reuse.
 
-The protocol does not claim that an AI system can create physical
-energy from nothing.
+Version 0.3 introduces the first forward-moving artifact in that path: the Residual Reintegration Plan.
 
-The term regenerative refers to the recovery of value that would
-otherwise remain unused, disconnected, or discarded.
-
-Examples include:
-
-- rejected inference candidates,
-- intermediate computations,
-- failed attempts,
-- unused evidence,
-- discovered constraints,
-- safety observations,
-- cache candidates,
-- idle compute capacity,
-- reusable thermal output,
-- unallocated economic value.
-
-## 2. v0.1 scope
-
-Version 0.1 defines only the Inference Residual Record.
-
-It answers the following questions:
-
-1. What residual was produced?
-2. Which inference produced it?
-3. Which Origin records support it?
-4. Who or what recorded it?
-5. What physical or logical form does it have?
-6. Where is its content stored?
-7. What is its preliminary safety condition?
-8. How long may it be retained?
-9. May it proceed to later classification?
-
-Version 0.1 does not determine the final reuse destination.
-
-## 3. Core flow
+## 2. Three-record chain
 
 ```text
-Origin
-  ↓
-Inference
-  ↓
-Residual generation
-  ↓
 Inference Residual Record
-  ↓
-Residual classification
-  ↓
-Reintegration or isolation
+  identifies what remains
 
-The final two stages are reserved for later protocol versions.
+Residual Classification Assessment
+  decides whether the residual is recoverable, dormant, hazardous, or discardable
 
-4. Residual abstraction
+Residual Reintegration Plan
+  proposes one bounded future use for a recoverable residual
 
-A residual is not limited to text or model output.
+Each stage has a different authority.
 
-A residual may represent:
+Record       = observation
+Assessment   = classification
+Plan         = proposal
 
-Data
-Computation
-Thermal energy
-Available time
-Economic value
-Operational capacity
+None of these records authorizes execution.
 
-This allows logical AI resources and physical infrastructure resources
-to be governed by a common record structure.
+3. Cross-record invariants
 
-5. Safety boundary
+A valid plan must preserve the following chain:
 
-A residual record is not permission to reuse the residual.
+plan.residual_id
+  = assessment.residual_id
+  = residual.residual_id
 
-The field:
+plan.source_inference_id
+  = assessment.source_inference_id
+  = residual.source_inference_id
 
-preliminary_processing:
-  reuse_eligible: true
+The plan must also be created after the assessment, and the assessment after the residual.
 
-means only that the residual may proceed to a later classification
-process.
+4. Approved target rule
 
-It does not authorize reintegration.
+The classification assessment defines candidate targets.
 
-Actual reuse must eventually require:
+The plan may select exactly one of those targets, but it cannot invent a new target.
 
-Classification
+Assessment candidate target
+        ↓ exact type, ID, and mode match
+Reintegration plan target
+
+This prevents a safe classification from being reused as permission for an unrelated destination.
+
+5. Integrity binding
+
+The plan binds to the residual digest.
+
+Two modes are supported:
+
+exact_content
+
+The plan references the exact residual content recorded in the residual record.
+
+verified_derivative
+
+The plan references a derivative artifact produced under a declared transformation policy.
+
+A verified derivative still preserves the original Origin chain and must not erase the source digest.
+
+6. Scope control
+
+Every plan defines:
+
+allowed operations,
+
+prohibited operations,
+
+maximum uses,
+
+maximum cycle depth,
+
+execution environment,
+
+optional geographic scope,
+
+optional node scope.
+
+The maximum circulation depth prevents a residual from being copied indefinitely through recursive inference loops.
+
+7. Authorization boundary
+
+Version 0.3 supports only two authorization states:
+
+not_requested
+requested
+
+A plan can request future authority, but cannot contain an authorized state.
+
+Execution authority must come from a separate authorization artifact.
+
+8. Physical and logical reintegration
+
+The same plan model supports:
+
+data and computation reuse,
+
+safety and boundary updates,
+
+agent handoffs,
+
+routing policy updates,
+
+physical heat recovery,
+
+economic reallocation.
+
+The validator checks that the target is compatible with the residual form.
+
+9. Future execution layer
+
+Version 0.4 will record what actually happened.
+
+Plan
   ↓
 Authorization
   ↓
-Execution
+Execution Receipt
   ↓
 Audit
-6. Future versions
 
-Planned protocol evolution:
+The execution receipt must not merely cite the plan. It must prove that actual operations stayed within the plan and authorization scopes.
 
-v0.1
-Inference Residual Record
-
-v0.2
-Residual Classification Assessment
-
-v0.3
-Residual Reintegration Plan
-
-v0.4
-Regenerative Cycle Execution Receipt
-
-v0.5
-Cycle Stability and Contamination Control
