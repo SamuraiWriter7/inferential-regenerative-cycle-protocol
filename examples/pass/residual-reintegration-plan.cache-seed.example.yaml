@@ -1,0 +1,80 @@
+schema_version: "0.3.0"
+record_type: residual_reintegration_plan
+plan_id: reintegration-plan:2026-07-31:cache-seed-001
+residual_id: residual:2026-07-31:route-cache-001
+assessment_id: assessment:2026-07-31:route-cache-001
+source_inference_id: inference:2026-07-31:route-cache-build-001
+planned_at: "2026-07-31T10:32:00+09:00"
+planner:
+  planner_id: service:residual-reintegration-planner
+  planner_type: planning_service
+  independence: separate_runtime
+  planning_authority_ref: authority-scope:reintegration-planning-01
+objective: Seed a bounded regional route cache with verified intermediate features to reduce repeated computation and latency.
+target:
+  target_type: retrieval_cache
+  target_id: cache:regional-route-features-01
+  reuse_mode: cache_seed
+  target_state_ref: context:regional-route-cache-state-001
+residual_binding:
+  algorithm: sha256
+  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  binding_mode: exact_content
+provenance_binding:
+  origin_refs:
+    - origin:request:regional-route-cache-001
+  trace_refs:
+    - trace:inference:route-cache-build-001
+  preserve_origin_chain: true
+transformation:
+  mode: compress
+  semantic_preservation_required: true
+  output_media_type: application/json
+  transformation_policy_ref: policy:cache-compression-01
+scope_control:
+  allowed_operations:
+    - read
+    - transform
+    - cache
+  prohibited_operations:
+    - execute_without_authorization
+    - modify_origin
+    - remove_trace
+    - expand_scope
+  maximum_uses: 100
+  maximum_cycle_depth: 3
+  environment: isolated_runtime
+  geographic_scope:
+    - JP-KANTO
+  node_scope:
+    - node:tokyo-edge-07
+safety_controls:
+  human_review_required: false
+  contamination_scan_required: true
+  rollback_required: true
+  halt_conditions:
+    - origin_chain_break
+    - integrity_mismatch
+    - authorization_missing
+    - scope_violation
+    - maximum_use_exceeded
+    - maximum_cycle_depth_exceeded
+    - confidence_degradation
+authorization_gate:
+  execution_authorization_required: true
+  status: requested
+  required_scope:
+    - cache.write:regional-route-features-01
+  authorization_request_ref: authorization-request:cache-seed-20260731-001
+expected_benefit:
+  benefit_types:
+    - reduced_computation
+    - reduced_latency
+  measurement_refs:
+    - measurement-plan:route-cache-efficiency-001
+  estimated_value: 420
+  value_unit: avoided_tokens_per_query
+lifecycle:
+  status: ready_for_authorization
+  review_at: "2026-08-02T10:32:00+09:00"
+  expires_at: "2026-08-10T10:32:00+09:00"
