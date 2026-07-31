@@ -1,0 +1,44 @@
+schema_version: 0.5.0
+record_type: cycle_stability_assessment
+stability_assessment_id: stability-assessment:2026-07-31:broken-provenance-stable-001
+audit_id: audit:2026-07-31:cache-seed-001
+execution_receipt_id: execution-receipt:2026-07-31:cache-seed-001
+plan_id: reintegration-plan:2026-07-31:cache-seed-001
+residual_id: residual:2026-07-31:route-cache-001
+assessed_at: '2026-07-31T11:45:00+09:00'
+assessor:
+  assessor_id: service:cycle-stability-service-01
+  assessor_type: stability_service
+observation_window:
+  cycle_id: cycle:2026-07-31:cache-seed-001
+  started_at: '2026-07-31T10:45:00+09:00'
+  ended_at: '2026-07-31T11:40:00+09:00'
+  included_execution_receipt_refs:
+  - execution-receipt:2026-07-31:cache-seed-001
+  current_cycle_depth: 1
+  observed_reuse_count: 1
+signals:
+  contamination_status: clean
+  confidence_trend: stable
+  provenance_continuity: broken
+  authorization_continuity: intact
+  resource_pressure: low
+  feedback_amplification: none
+  benefit_persistence: confirmed
+  unresolved_disputes: 0
+thresholds:
+  maximum_cycle_depth: 1
+  maximum_reuse_count: 1
+  maximum_resource_pressure: moderate
+  maximum_feedback_amplification: low
+evaluation:
+  stability_status: stable
+  violated_thresholds:
+  - provenance_continuity
+  rationale: The cycle remains bounded, traceable, authorized, and beneficial.
+recommended_action: continue
+reassessment:
+  required: false
+assessment_integrity:
+  algorithm: sha256
+  digest: '6111111111111111111111111111111111111111111111111111111111111111'
