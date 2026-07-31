@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.5.0/regenerative-cycle-audit-record.schema.json",
+  "title": "Regenerative Cycle Audit Record",
+  "description": "Audits a regenerative cycle execution receipt against its plan, authorization, provenance, integrity, safety, and realized benefit evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "audit_id",
+    "execution_receipt_id",
+    "plan_id",
+    "residual_id",
+    "audited_at",
+    "auditor",
+    "evidence_refs",
+    "authorization_verification",
+    "execution_verification",
+    "contamination_assessment",
+    "benefit_verification",
+    "findings",
+    "audit_conclusion",
+    "audit_integrity"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.5.0"},
+    "record_type": {"const": "regenerative_cycle_audit_record"},
+    "audit_id": {
+      "type": "string",
+      "pattern": "^audit:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "execution_receipt_id": {
+      "type": "string",
+      "pattern": "^execution-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^reintegration-plan:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "audited_at": {"type": "string", "format": "date-time"},
+    "auditor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["auditor_id", "auditor_type", "independence"],
+      "properties": {
+        "auditor_id": {
+          "type": "string",
+          "pattern": "^(service|agent|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "auditor_type": {
+          "type": "string",
+          "enum": ["audit_service", "independent_agent", "human_auditor"]
+        },
+        "independence": {
+          "type": "string",
+          "enum": ["independent", "separated_duties", "human_supervised"]
+        },
+        "authority_scope_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^authority-scope:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(trace|artifact|metric|authorization-receipt|execution-receipt):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+      }
+    },
+    "authorization_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_match",
+        "receipt_verified",
+        "decision_valid",
+        "scope_match",
+        "time_valid"
+      ],
+      "properties": {
+        "request_match": {"type": "boolean"},
+        "receipt_verified": {"type": "boolean"},
+        "decision_valid": {"type": "boolean"},
+        "scope_match": {"type": "boolean"},
+        "time_valid": {"type": "boolean"}
+      }
+    },
+    "execution_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plan_match",
+        "target_match",
+        "operations_match",
+        "provenance_match",
+        "integrity_match",
+        "status_match"
+      ],
+      "properties": {
+        "plan_match": {"type": "boolean"},
+        "target_match": {"type": "boolean"},
+        "operations_match": {"type": "boolean"},
+        "provenance_match": {"type": "boolean"},
+        "integrity_match": {"type": "boolean"},
+        "status_match": {"type": "boolean"}
+      }
+    },
+    "contamination_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "propagation_scope", "isolation_status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["clean", "contained", "suspected", "confirmed"]
+        },
+        "contamination_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(trace|artifact|finding):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "propagation_scope": {
+          "type": "string",
+          "enum": ["none", "local", "multi_node", "federated", "unknown"]
+        },
+        "isolation_status": {
+          "type": "string",
+          "enum": ["not_required", "active", "completed", "failed"]
+        }
+      }
+    },
+    "benefit_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "verified_metrics"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["verified", "partially_verified", "unverified", "disputed"]
+        },
+        "verified_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric_name", "verification_status"],
+            "properties": {
+              "metric_name": {"type": "string", "minLength": 1, "maxLength": 128},
+              "verification_status": {
+                "type": "string",
+                "enum": ["verified", "partially_verified", "rejected"]
+              },
+              "observed_value": {"type": "number"},
+              "unit": {"type": "string", "minLength": 1, "maxLength": 64},
+              "evidence_ref": {
+                "type": "string",
+                "pattern": "^(metric|artifact|trace):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "severity",
+          "category",
+          "summary",
+          "resolution_status"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^finding:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "low", "medium", "high", "critical"]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "authorization",
+              "scope",
+              "provenance",
+              "integrity",
+              "contamination",
+              "benefit",
+              "runtime",
+              "other"
+            ]
+          },
+          "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+          "evidence_refs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^(trace|artifact|metric|authorization-receipt|execution-receipt):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+            }
+          },
+          "resolution_status": {
+            "type": "string",
+            "enum": ["open", "contained", "resolved", "accepted_risk"]
+          }
+        }
+      }
+    },
+    "audit_conclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "recommended_control", "rationale"],
+      "properties": {
+        "result": {
+          "type": "string",
+          "enum": ["passed", "passed_with_conditions", "failed", "inconclusive"]
+        },
+        "recommended_control": {
+          "type": "string",
+          "enum": ["continue", "suspend", "roll_back", "close", "human_review"]
+        },
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "audit_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": {"type": "string", "enum": ["sha256", "sha512"]},
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^x-[A-Za-z0-9._-]+$"},
+      "additionalProperties": true
+    }
+  }
+}
