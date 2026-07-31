@@ -68,3 +68,11 @@ A future royalty or settlement layer must verify beneficiaries, disputes, holds,
 A plan becomes unsafe when target state, policy, or infrastructure has changed.
 
 Every plan therefore expires. An expired plan must be reassessed rather than silently renewed.
+
+## Runtime authorization drift
+
+A valid authorization can still be misused if runtime operations, target, environment, node, geography, use count, or cycle depth expand beyond the plan. v0.4 compares all observed execution fields against both the plan and the authorization snapshot.
+
+## Safe halt integrity
+
+A receipt claiming `halted` must name a halt condition already declared by the plan. A receipt claiming `completed` must not contain a halt condition, a failed contamination scan, or unauthorized effects.
