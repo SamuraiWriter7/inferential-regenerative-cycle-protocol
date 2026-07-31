@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.5.0/cycle-stability-assessment.schema.json",
+  "title": "Cycle Stability Assessment",
+  "description": "Evaluates whether a regenerative inference cycle remains safe, bounded, provenance-preserving, and beneficial after audit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "stability_assessment_id",
+    "audit_id",
+    "execution_receipt_id",
+    "plan_id",
+    "residual_id",
+    "assessed_at",
+    "assessor",
+    "observation_window",
+    "signals",
+    "thresholds",
+    "evaluation",
+    "recommended_action",
+    "reassessment",
+    "assessment_integrity"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.5.0"},
+    "record_type": {"const": "cycle_stability_assessment"},
+    "stability_assessment_id": {
+      "type": "string",
+      "pattern": "^stability-assessment:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "audit_id": {
+      "type": "string",
+      "pattern": "^audit:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "execution_receipt_id": {
+      "type": "string",
+      "pattern": "^execution-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^reintegration-plan:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "assessed_at": {"type": "string", "format": "date-time"},
+    "assessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assessor_id", "assessor_type"],
+      "properties": {
+        "assessor_id": {
+          "type": "string",
+          "pattern": "^(service|agent|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "assessor_type": {
+          "type": "string",
+          "enum": ["stability_service", "independent_agent", "human_reviewer"]
+        }
+      }
+    },
+    "observation_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cycle_id",
+        "started_at",
+        "ended_at",
+        "included_execution_receipt_refs",
+        "current_cycle_depth",
+        "observed_reuse_count"
+      ],
+      "properties": {
+        "cycle_id": {
+          "type": "string",
+          "pattern": "^cycle:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "started_at": {"type": "string", "format": "date-time"},
+        "ended_at": {"type": "string", "format": "date-time"},
+        "included_execution_receipt_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^execution-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "current_cycle_depth": {"type": "integer", "minimum": 1},
+        "observed_reuse_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contamination_status",
+        "confidence_trend",
+        "provenance_continuity",
+        "authorization_continuity",
+        "resource_pressure",
+        "feedback_amplification",
+        "benefit_persistence",
+        "unresolved_disputes"
+      ],
+      "properties": {
+        "contamination_status": {
+          "type": "string",
+          "enum": ["clean", "contained", "suspected", "confirmed"]
+        },
+        "confidence_trend": {
+          "type": "string",
+          "enum": ["improving", "stable", "degrading"]
+        },
+        "provenance_continuity": {
+          "type": "string",
+          "enum": ["intact", "degraded", "broken"]
+        },
+        "authorization_continuity": {
+          "type": "string",
+          "enum": ["intact", "degraded", "broken"]
+        },
+        "resource_pressure": {
+          "type": "string",
+          "enum": ["low", "moderate", "high", "critical"]
+        },
+        "feedback_amplification": {
+          "type": "string",
+          "enum": ["none", "low", "moderate", "high", "critical"]
+        },
+        "benefit_persistence": {
+          "type": "string",
+          "enum": ["confirmed", "partial", "not_confirmed"]
+        },
+        "unresolved_disputes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_cycle_depth",
+        "maximum_reuse_count",
+        "maximum_resource_pressure",
+        "maximum_feedback_amplification"
+      ],
+      "properties": {
+        "maximum_cycle_depth": {"type": "integer", "minimum": 1},
+        "maximum_reuse_count": {"type": "integer", "minimum": 1},
+        "maximum_resource_pressure": {
+          "type": "string",
+          "enum": ["low", "moderate", "high"]
+        },
+        "maximum_feedback_amplification": {
+          "type": "string",
+          "enum": ["none", "low", "moderate"]
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stability_status", "violated_thresholds", "rationale"],
+      "properties": {
+        "stability_status": {
+          "type": "string",
+          "enum": ["stable", "conditionally_stable", "unstable", "critical"]
+        },
+        "violated_thresholds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "cycle_depth",
+              "reuse_count",
+              "resource_pressure",
+              "feedback_amplification",
+              "provenance_continuity",
+              "authorization_continuity",
+              "contamination",
+              "benefit_persistence",
+              "unresolved_disputes",
+              "audit_failure"
+            ]
+          }
+        },
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": ["continue", "suspend", "roll_back", "close", "human_review"]
+    },
+    "reassessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "reassess_at": {"type": "string", "format": "date-time"},
+        "required_evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(trace|artifact|metric|audit):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        }
+      }
+    },
+    "assessment_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": {"type": "string", "enum": ["sha256", "sha512"]},
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^x-[A-Za-z0-9._-]+$"},
+      "additionalProperties": true
+    }
+  }
+}
