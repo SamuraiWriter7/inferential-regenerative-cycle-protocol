@@ -1,0 +1,31 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+assessment_id: assessment:2026-07-31:recoverable-high-hazard-001
+residual_id: residual:2026-07-31:route-candidate-001
+source_inference_id: inference:2026-07-31:route-planning-001
+assessed_at: "2026-07-31T10:17:00+09:00"
+assessor:
+  assessor_id: service:bad-assessment-service
+  assessor_type: assessment_service
+  independence: same_runtime
+classification: recoverable
+confidence: 0.90
+rationale: This assessment is invalid because a high-hazard residual cannot be classified as recoverable.
+evidence_refs:
+  - trace:inference:route-planning-001
+risk_evaluation:
+  hazard_level: high
+  contamination_risk: high
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: compatible
+candidate_reuse_targets:
+  - target_type: future_inference_context
+    target_id: context:unsafe-reuse-001
+    reuse_mode: contextual_reference
+decision:
+  eligible_for_reintegration_planning: true
+  required_action: approve_for_planning
+  human_review_required: false
+lifecycle:
+  status: active
