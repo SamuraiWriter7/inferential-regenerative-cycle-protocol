@@ -1,4 +1,4 @@
-schema_version: 0.4.0
+schema_version: "0.5.0"
 record_type: inference_residual_record
 residual_id: residual:2026-07-31:rejected-route-001
 source_inference_id: inference:2026-07-31:route-planning-001
