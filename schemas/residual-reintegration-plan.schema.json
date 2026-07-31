@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.3.0/residual-reintegration-plan.schema.json",
+  "title": "Residual Reintegration Plan",
+  "description": "Defines a non-executable plan for safely reconnecting a recoverable inference residual to an approved target before execution authorization is granted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "plan_id",
+    "residual_id",
+    "assessment_id",
+    "source_inference_id",
+    "planned_at",
+    "planner",
+    "objective",
+    "target",
+    "residual_binding",
+    "provenance_binding",
+    "transformation",
+    "scope_control",
+    "safety_controls",
+    "authorization_gate",
+    "expected_benefit",
+    "lifecycle"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.3.0"},
+    "record_type": {"const": "residual_reintegration_plan"},
+    "plan_id": {
+      "type": "string",
+      "pattern": "^reintegration-plan:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^assessment:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "source_inference_id": {
+      "type": "string",
+      "pattern": "^inference:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "planned_at": {"type": "string", "format": "date-time"},
+    "planner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["planner_id", "planner_type", "independence"],
+      "properties": {
+        "planner_id": {
+          "type": "string",
+          "pattern": "^(agent|service|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "planner_type": {
+          "type": "string",
+          "enum": ["ai_agent", "planning_service", "human_planner"]
+        },
+        "independence": {
+          "type": "string",
+          "enum": ["same_runtime", "separate_runtime", "separate_operator"]
+        },
+        "planning_authority_ref": {
+          "type": "string",
+          "pattern": "^authority-scope:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "objective": {"type": "string", "minLength": 20, "maxLength": 3000},
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_type", "target_id", "reuse_mode"],
+      "properties": {
+        "target_type": {
+          "type": "string",
+          "enum": [
+            "future_inference_context",
+            "retrieval_cache",
+            "safety_policy",
+            "boundary_condition_registry",
+            "agent_handoff",
+            "model_routing_policy",
+            "physical_recovery_system",
+            "royalty_pool"
+          ]
+        },
+        "target_id": {"type": "string", "minLength": 3, "maxLength": 256},
+        "reuse_mode": {
+          "type": "string",
+          "enum": [
+            "contextual_reference",
+            "cache_seed",
+            "constraint",
+            "training_evidence",
+            "operational_input",
+            "thermal_recovery",
+            "economic_reallocation"
+          ]
+        },
+        "target_state_ref": {
+          "type": "string",
+          "pattern": "^(state|context|registry|system|pool):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "residual_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest", "binding_mode"],
+      "properties": {
+        "algorithm": {"type": "string", "enum": ["sha256", "sha512"]},
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        },
+        "binding_mode": {
+          "type": "string",
+          "enum": ["exact_content", "verified_derivative"]
+        },
+        "derivative_artifact_ref": {
+          "type": "string",
+          "pattern": "^artifact:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "provenance_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["origin_refs", "trace_refs", "preserve_origin_chain"],
+      "properties": {
+        "origin_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^origin:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^trace:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "preserve_origin_chain": {"const": true}
+      }
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "semantic_preservation_required"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["none", "redact", "compress", "summarize", "normalize", "aggregate", "convert"]
+        },
+        "semantic_preservation_required": {"type": "boolean"},
+        "output_media_type": {"type": "string", "minLength": 3, "maxLength": 128},
+        "transformation_policy_ref": {
+          "type": "string",
+          "pattern": "^policy:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "scope_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_operations",
+        "prohibited_operations",
+        "maximum_uses",
+        "maximum_cycle_depth",
+        "environment"
+      ],
+      "properties": {
+        "allowed_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "read",
+              "reference",
+              "copy",
+              "transform",
+              "cache",
+              "route",
+              "transfer",
+              "allocate"
+            ]
+          }
+        },
+        "prohibited_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "execute_without_authorization",
+              "modify_origin",
+              "remove_trace",
+              "expand_scope",
+              "delegate_authority",
+              "train_without_consent",
+              "export_restricted_content"
+            ]
+          }
+        },
+        "maximum_uses": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "maximum_cycle_depth": {"type": "integer", "minimum": 1, "maximum": 32},
+        "environment": {
+          "type": "string",
+          "enum": ["sandbox", "isolated_runtime", "controlled_production"]
+        },
+        "geographic_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 2, "maxLength": 64}
+        },
+        "node_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 3, "maxLength": 256}
+        }
+      }
+    },
+    "safety_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "human_review_required",
+        "contamination_scan_required",
+        "rollback_required",
+        "halt_conditions"
+      ],
+      "properties": {
+        "human_review_required": {"type": "boolean"},
+        "contamination_scan_required": {"type": "boolean"},
+        "rollback_required": {"type": "boolean"},
+        "halt_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "origin_chain_break",
+              "integrity_mismatch",
+              "authorization_missing",
+              "scope_violation",
+              "confidence_degradation",
+              "contamination_detected",
+              "maximum_use_exceeded",
+              "maximum_cycle_depth_exceeded",
+              "target_state_changed",
+              "human_stop_requested"
+            ]
+          }
+        },
+        "reviewer_role": {"type": "string", "minLength": 3, "maxLength": 128}
+      }
+    },
+    "authorization_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["execution_authorization_required", "status", "required_scope"],
+      "properties": {
+        "execution_authorization_required": {"const": true},
+        "status": {"type": "string", "enum": ["not_requested", "requested"]},
+        "required_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 3, "maxLength": 256}
+        },
+        "authorization_request_ref": {
+          "type": "string",
+          "pattern": "^authorization-request:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "expected_benefit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["benefit_types", "measurement_refs"],
+      "properties": {
+        "benefit_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "reduced_computation",
+              "reduced_latency",
+              "improved_safety",
+              "improved_reliability",
+              "thermal_recovery",
+              "economic_recovery",
+              "knowledge_preservation"
+            ]
+          }
+        },
+        "measurement_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(metric|measurement-plan):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "estimated_value": {"type": "number", "minimum": 0},
+        "value_unit": {"type": "string", "minLength": 1, "maxLength": 64}
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "expires_at"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["draft", "ready_for_authorization", "withdrawn", "expired"]
+        },
+        "review_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "supersedes_plan_id": {
+          "type": "string",
+          "pattern": "^reintegration-plan:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^x-[A-Za-z0-9._-]+$"},
+      "additionalProperties": true
+    }
+  }
+}
