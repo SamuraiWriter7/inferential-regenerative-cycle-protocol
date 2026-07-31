@@ -50,7 +50,7 @@ safety_controls:
   human_review_required: false
   reviewer_role: facility_energy_operator
   rollback_required: true
-schema_version: 0.4.0
+schema_version: "0.5.0"
 scope_control:
   allowed_operations:
   - read
