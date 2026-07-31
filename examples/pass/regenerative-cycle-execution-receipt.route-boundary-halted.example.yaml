@@ -1,0 +1,69 @@
+schema_version: "0.4.0"
+record_type: regenerative_cycle_execution_receipt
+receipt_id: execution-receipt:2026-07-31:route-boundary-001
+plan_id: reintegration-plan:2026-07-31:route-boundary-001
+residual_id: residual:2026-07-31:rejected-route-001
+assessment_id: assessment:2026-07-31:rejected-route-001
+source_inference_id: inference:2026-07-31:route-planning-001
+recorded_at: "2026-07-31T11:20:00+09:00"
+authorization_binding:
+  authorization_request_ref: authorization-request:route-boundary-20260731-001
+  authorization_receipt_ref: authorization-receipt:route-boundary-20260731-001
+  decision: authorized
+  authorized_at: "2026-07-31T10:42:00+09:00"
+  authorizer_id: service:reintegration-authority-01
+  authorized_operations: [read, transform, reference]
+  authorized_environment: sandbox
+  authorized_scope: [registry.write:routing-boundaries-01]
+  expires_at: "2026-07-31T12:00:00+09:00"
+execution:
+  execution_id: execution:2026-07-31:route-boundary-001
+  executor:
+    executor_id: service:boundary-registry-writer-01
+    executor_type: execution_service
+    runtime_id: runtime:route-boundary-20260731-001
+    node_id: node:tokyo-edge-07
+  started_at: "2026-07-31T10:50:00+09:00"
+  completed_at: "2026-07-31T10:52:00+09:00"
+  status: halted
+  operations_performed: [read, transform]
+  use_count: 1
+  cycle_depth: 1
+  input_integrity:
+    algorithm: sha256
+    digest: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  output_ref: event:route-boundary-halt-20260731-001
+  output_integrity:
+    algorithm: sha256
+    digest: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+target_observation:
+  target_type: boundary_condition_registry
+  target_id: registry:routing-boundaries-01
+  reuse_mode: constraint
+  target_update_status: not_applied
+  before_state_ref: registry:routing-boundaries-state-20260731
+provenance_observation:
+  origin_refs: [origin:request:regional-load-balancing-001]
+  trace_refs: [trace:inference:route-planning-001, trace:candidate:route-b-001]
+  generated_trace_refs: [trace:reintegration:route-boundary-halt-001]
+  preserve_origin_chain: true
+scope_observation:
+  environment: sandbox
+  node_id: node:tokyo-edge-07
+safety_observation:
+  contamination_scan_result: clean
+  triggered_halt_conditions: [target_state_changed]
+  rollback_status: available
+  unauthorized_effects_detected: false
+  observation_notes: The registry state changed after authorization, so the write was stopped before application.
+benefit_realization:
+  status: not_realized
+  benefit_types: [improved_reliability, knowledge_preservation]
+  observed_metrics: []
+outcome:
+  audit_required: true
+  next_action: investigate
+  outcome_summary: Execution halted safely before the target registry was modified.
+receipt_integrity:
+  algorithm: sha256
+  digest: "3222222222222222222222222222222222222222222222222222222222222222"
