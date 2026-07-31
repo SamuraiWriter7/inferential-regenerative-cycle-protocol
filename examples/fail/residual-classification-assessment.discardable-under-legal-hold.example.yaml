@@ -1,0 +1,52 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+
+assessment_id: assessment:2026-07-31:discard-legal-hold-001
+residual_id: residual:2026-07-31:unsafe-input-observation-001
+source_inference_id: inference:2026-07-31:security-screening-001
+
+assessed_at: "2026-07-31T10:16:00+09:00"
+
+assessor:
+  assessor_id: human:test-reviewer
+  assessor_type: human_reviewer
+  authority_scope_refs:
+    - authority:residual-disposal:test
+
+evidence_refs:
+  - origin:external-input:untrusted-payload-001
+  - trace:security-screening:20260731-001
+
+provenance_assessment:
+  origin_present: true
+  trace_continuity: complete
+  integrity_verified: true
+
+contamination_assessment:
+  risk_level: medium
+  indicators:
+    - no_future_operational_use
+  isolation_required: false
+
+classification: discardable
+confidence: 0.95
+
+classification_reason: >-
+  This assessment is invalid because the referenced residual is under
+  legal hold and is already quarantined as high risk.
+
+handling_decision:
+  reuse_eligible: false
+  authorization_required: true
+  quarantine_required: false
+  disposal_requested: true
+  retention_action: secure_delete
+  reuse_modes: []
+  disposal_method: secure_delete
+
+reassessment:
+  required: false
+
+validity:
+  valid_from: "2026-07-31T10:16:00+09:00"
+  valid_until: "2026-08-31T10:16:00+09:00"
