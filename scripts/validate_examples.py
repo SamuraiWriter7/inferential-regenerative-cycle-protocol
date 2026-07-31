@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Inferential Regenerative Cycle Protocol v0.2 examples."""
+"""Validate Inferential Regenerative Cycle Protocol v0.3 examples."""
 
 from __future__ import annotations
 
@@ -22,10 +22,14 @@ SCHEMA_PATHS = {
     "residual_classification_assessment": (
         ROOT_DIR / "schemas" / "residual-classification-assessment.schema.json"
     ),
+    "residual_reintegration_plan": (
+        ROOT_DIR / "schemas" / "residual-reintegration-plan.schema.json"
+    ),
 }
 
 
 def load_yaml_or_json(path: Path) -> dict[str, Any]:
+    """Load a YAML or JSON object."""
     try:
         with path.open("r", encoding="utf-8") as stream:
             document = yaml.safe_load(stream)
@@ -36,7 +40,6 @@ def load_yaml_or_json(path: Path) -> dict[str, Any]:
 
     if not isinstance(document, dict):
         raise RuntimeError(f"{path}: document root must be an object")
-
     return document
 
 
@@ -58,10 +61,7 @@ def collect_schema_errors(
         validator.iter_errors(document),
         key=lambda error: list(error.absolute_path),
     )
-    return [
-        f"{format_json_path(error)}: {error.message}"
-        for error in errors
-    ]
+    return [f"{format_json_path(error)}: {error.message}" for error in errors]
 
 
 def parse_datetime(
@@ -78,13 +78,11 @@ def parse_datetime(
     if parsed.tzinfo is None:
         errors.append(f"{field_name}: timezone information is required")
         return None
-
     return parsed
 
 
 def load_validators() -> dict[str, Draft202012Validator]:
     validators: dict[str, Draft202012Validator] = {}
-
     for record_type, schema_path in SCHEMA_PATHS.items():
         schema = load_yaml_or_json(schema_path)
         Draft202012Validator.check_schema(schema)
@@ -92,7 +90,6 @@ def load_validators() -> dict[str, Draft202012Validator]:
             schema,
             format_checker=FormatChecker(),
         )
-
     return validators
 
 
@@ -100,42 +97,10 @@ def validator_for_document(
     document: dict[str, Any],
     validators: dict[str, Draft202012Validator],
 ) -> Draft202012Validator | None:
-    record_type = document.get("record_type")
-    return validators.get(record_type)
+    return validators.get(document.get("record_type"))
 
 
-def is_classification_eligible(
-    residual: dict[str, Any],
-) -> bool:
-    """Return whether a residual may enter formal classification.
-
-    v0.2 records use ``classification_eligible``.  For repositories that
-    still contain v0.1 residual examples, ``reuse_eligible`` is interpreted
-    as a legacy field.  Quarantined and discard-requested v0.1 residuals
-    remain classifiable even though they were correctly marked as not
-    reusable.
-    """
-
-    processing = residual.get("preliminary_processing", {})
-
-    if "classification_eligible" in processing:
-        return bool(processing["classification_eligible"])
-
-    if "reuse_eligible" in processing:
-        if bool(processing["reuse_eligible"]):
-            return True
-
-        return processing.get("disposition") in {
-            "quarantined",
-            "discard_requested",
-        }
-
-    return False
-
-
-def collect_residual_semantic_errors(
-    document: dict[str, Any],
-) -> list[str]:
+def collect_residual_semantic_errors(document: dict[str, Any]) -> list[str]:
     errors: list[str] = []
 
     created_at = parse_datetime(document["created_at"], "created_at", errors)
@@ -196,16 +161,17 @@ def collect_residual_semantic_errors(
             "safety.quarantine_reason: required when disposition is quarantined"
         )
 
-    if not is_classification_eligible(document):
-        if disposition == "pending_assessment":
-            errors.append(
-                "preliminary_processing.classification_eligible: "
-                "pending_assessment residuals must be classification eligible"
-            )
+    if (
+        disposition == "pending_assessment"
+        and not processing["classification_eligible"]
+    ):
+        errors.append(
+            "preliminary_processing.classification_eligible: "
+            "pending_assessment residuals must be classification eligible"
+        )
 
     reference_type = content_reference["reference_type"]
     sensitivity = document["sensitivity"]
-
     if sensitivity == "restricted" and reference_type == "inline_text":
         errors.append(
             "content_reference.reference_type: "
@@ -290,9 +256,7 @@ def collect_assessment_semantic_errors(
     residual = residual_index.get(residual_id)
 
     if residual is None:
-        errors.append(
-            f"residual_id: unknown referenced residual '{residual_id}'"
-        )
+        errors.append(f"residual_id: unknown referenced residual '{residual_id}'")
     else:
         if document["source_inference_id"] != residual["source_inference_id"]:
             errors.append(
@@ -307,21 +271,28 @@ def collect_assessment_semantic_errors(
                 "assessed_at: cannot be earlier than referenced residual creation"
             )
 
-        if not is_classification_eligible(residual):
+        if not residual["preliminary_processing"]["classification_eligible"]:
             errors.append(
                 "residual_id: referenced residual is not classification eligible"
             )
 
         source_hazard = residual["safety"]["potential_hazard"]
-        if classification == "recoverable" and source_hazard in {"high", "critical"}:
+        if classification == "recoverable" and source_hazard in {
+            "high",
+            "critical",
+        }:
             errors.append(
                 "classification: high or critical source residuals cannot be recoverable"
             )
 
         source_disposition = residual["preliminary_processing"]["disposition"]
-        if classification == "recoverable" and source_disposition != "pending_assessment":
+        if (
+            classification == "recoverable"
+            and source_disposition != "pending_assessment"
+        ):
             errors.append(
-                "classification: recoverable residuals must originate from pending_assessment"
+                "classification: recoverable residuals must originate from "
+                "pending_assessment"
             )
         if classification == "hazardous" and source_disposition != "quarantined":
             errors.append(
@@ -335,10 +306,13 @@ def collect_assessment_semantic_errors(
 
     if classification == "recoverable":
         if confidence < 0.60:
-            errors.append("confidence: recoverable classification requires at least 0.60")
+            errors.append(
+                "confidence: recoverable classification requires at least 0.60"
+            )
         if risk["hazard_level"] not in {"none", "low"}:
             errors.append(
-                "risk_evaluation.hazard_level: recoverable residuals require none or low"
+                "risk_evaluation.hazard_level: "
+                "recoverable residuals require none or low"
             )
         if risk["contamination_risk"] not in {"none", "low"}:
             errors.append(
@@ -371,10 +345,13 @@ def collect_assessment_semantic_errors(
             )
         if action != "approve_for_planning":
             errors.append(
-                "decision.required_action: recoverable classification requires approve_for_planning"
+                "decision.required_action: recoverable classification "
+                "requires approve_for_planning"
             )
         if status != "active":
-            errors.append("lifecycle.status: recoverable classification requires active")
+            errors.append(
+                "lifecycle.status: recoverable classification requires active"
+            )
 
     elif classification == "dormant":
         if eligible:
@@ -384,7 +361,8 @@ def collect_assessment_semantic_errors(
             )
         if action != "retain_dormant":
             errors.append(
-                "decision.required_action: dormant classification requires retain_dormant"
+                "decision.required_action: dormant classification "
+                "requires retain_dormant"
             )
         if status != "awaiting_review":
             errors.append(
@@ -394,11 +372,15 @@ def collect_assessment_semantic_errors(
             errors.append("lifecycle.review_at: required for dormant classification")
 
     elif classification == "hazardous":
-        if risk["hazard_level"] not in {"medium", "high", "critical"} and risk[
-            "contamination_risk"
-        ] not in {"high", "critical"}:
+        material_hazard = risk["hazard_level"] in {"medium", "high", "critical"}
+        material_contamination = risk["contamination_risk"] in {
+            "high",
+            "critical",
+        }
+        if not material_hazard and not material_contamination:
             errors.append(
-                "risk_evaluation: hazardous classification requires material hazard or contamination risk"
+                "risk_evaluation: hazardous classification requires material "
+                "hazard or contamination risk"
             )
         if eligible:
             errors.append(
@@ -407,11 +389,13 @@ def collect_assessment_semantic_errors(
             )
         if action != "quarantine":
             errors.append(
-                "decision.required_action: hazardous classification requires quarantine"
+                "decision.required_action: hazardous classification "
+                "requires quarantine"
             )
         if not human_review:
             errors.append(
-                "decision.human_review_required: must be true for hazardous classification"
+                "decision.human_review_required: "
+                "must be true for hazardous classification"
             )
         if not decision.get("quarantine_reason"):
             errors.append(
@@ -434,7 +418,8 @@ def collect_assessment_semantic_errors(
             )
         if action != "discard":
             errors.append(
-                "decision.required_action: discardable classification requires discard"
+                "decision.required_action: discardable classification "
+                "requires discard"
             )
         if not decision.get("discard_reason"):
             errors.append(
@@ -442,7 +427,8 @@ def collect_assessment_semantic_errors(
             )
         if status != "awaiting_disposal":
             errors.append(
-                "lifecycle.status: discardable classification requires awaiting_disposal"
+                "lifecycle.status: discardable classification "
+                "requires awaiting_disposal"
             )
         if targets:
             errors.append(
@@ -457,9 +443,304 @@ def collect_assessment_semantic_errors(
             "classification: integrity mismatch cannot be recoverable or dormant"
         )
 
-    if risk["provenance_status"] in {"missing", "conflicted"} and classification == "recoverable":
+    if (
+        risk["provenance_status"] in {"missing", "conflicted"}
+        and classification == "recoverable"
+    ):
         errors.append(
             "classification: missing or conflicted provenance cannot be recoverable"
+        )
+
+    return errors
+
+
+def target_signature(target: dict[str, Any]) -> tuple[str, str, str]:
+    return (
+        target["target_type"],
+        target["target_id"],
+        target["reuse_mode"],
+    )
+
+
+def collect_plan_semantic_errors(
+    document: dict[str, Any],
+    residual_index: dict[str, dict[str, Any]],
+    assessment_index: dict[str, dict[str, Any]],
+) -> list[str]:
+    errors: list[str] = []
+
+    planned_at = parse_datetime(document["planned_at"], "planned_at", errors)
+    lifecycle = document["lifecycle"]
+    scope = document["scope_control"]
+    controls = document["safety_controls"]
+    gate = document["authorization_gate"]
+    target = document["target"]
+    binding = document["residual_binding"]
+    provenance = document["provenance_binding"]
+    transformation = document["transformation"]
+    expected_benefit = document["expected_benefit"]
+
+    review_at = None
+    expires_at = parse_datetime(
+        lifecycle["expires_at"], "lifecycle.expires_at", errors
+    )
+    if "review_at" in lifecycle:
+        review_at = parse_datetime(
+            lifecycle["review_at"], "lifecycle.review_at", errors
+        )
+
+    if planned_at and review_at and review_at <= planned_at:
+        errors.append("lifecycle.review_at: must be later than planned_at")
+    if planned_at and expires_at and expires_at <= planned_at:
+        errors.append("lifecycle.expires_at: must be later than planned_at")
+    if review_at and expires_at and review_at >= expires_at:
+        errors.append("lifecycle.review_at: must be earlier than expires_at")
+
+    residual = residual_index.get(document["residual_id"])
+    assessment = assessment_index.get(document["assessment_id"])
+
+    if residual is None:
+        errors.append(
+            f"residual_id: unknown referenced residual '{document['residual_id']}'"
+        )
+    if assessment is None:
+        errors.append(
+            "assessment_id: unknown referenced assessment "
+            f"'{document['assessment_id']}'"
+        )
+
+    if residual is not None:
+        if document["source_inference_id"] != residual["source_inference_id"]:
+            errors.append(
+                "source_inference_id: must match the referenced residual record"
+            )
+
+        residual_integrity = residual["integrity"]
+        if binding["algorithm"] != residual_integrity["algorithm"]:
+            errors.append(
+                "residual_binding.algorithm: must match referenced residual integrity"
+            )
+        if binding["digest"].lower() != residual_integrity["digest"].lower():
+            errors.append(
+                "residual_binding.digest: must match referenced residual integrity"
+            )
+
+        if set(provenance["origin_refs"]) != set(residual["origin_refs"]):
+            errors.append(
+                "provenance_binding.origin_refs: must exactly preserve residual Origin references"
+            )
+
+        residual_traces = set(residual.get("trace_refs", []))
+        plan_traces = set(provenance["trace_refs"])
+        if not residual_traces.issubset(plan_traces):
+            errors.append(
+                "provenance_binding.trace_refs: must include every residual Trace reference"
+            )
+
+        if target["target_id"] in {
+            document["residual_id"],
+            document["source_inference_id"],
+        }:
+            errors.append(
+                "target.target_id: cannot be the residual or source inference identifier"
+            )
+
+        if residual["sensitivity"] == "restricted":
+            if scope["environment"] == "controlled_production":
+                errors.append(
+                    "scope_control.environment: restricted residuals cannot be planned directly for controlled_production"
+                )
+            if not controls["human_review_required"]:
+                errors.append(
+                    "safety_controls.human_review_required: required for restricted residuals"
+                )
+
+        if residual["safety"]["contains_secrets"]:
+            errors.append(
+                "residual_id: residuals containing secrets cannot enter reintegration planning"
+            )
+
+        target_type = target["target_type"]
+        reuse_mode = target["reuse_mode"]
+        residual_form = residual["residual_form"]
+        residual_category = residual["residual_category"]
+
+        if target_type == "physical_recovery_system":
+            if residual_form != "thermal":
+                errors.append(
+                    "target.target_type: physical_recovery_system requires a thermal residual"
+                )
+            if reuse_mode != "thermal_recovery":
+                errors.append(
+                    "target.reuse_mode: physical_recovery_system requires thermal_recovery"
+                )
+        if target_type == "royalty_pool":
+            if residual_form != "economic":
+                errors.append(
+                    "target.target_type: royalty_pool requires an economic residual"
+                )
+            if reuse_mode != "economic_reallocation":
+                errors.append(
+                    "target.reuse_mode: royalty_pool requires economic_reallocation"
+                )
+        if target_type == "retrieval_cache":
+            if residual_category not in {"cache_candidate", "intermediate_result"}:
+                errors.append(
+                    "target.target_type: retrieval_cache requires cache_candidate or intermediate_result"
+                )
+            if reuse_mode != "cache_seed":
+                errors.append(
+                    "target.reuse_mode: retrieval_cache requires cache_seed"
+                )
+        if target_type == "boundary_condition_registry" and reuse_mode != "constraint":
+            errors.append(
+                "target.reuse_mode: boundary_condition_registry requires constraint"
+            )
+
+    if assessment is not None:
+        if assessment["residual_id"] != document["residual_id"]:
+            errors.append(
+                "residual_id: must match the referenced assessment"
+            )
+        if assessment["source_inference_id"] != document["source_inference_id"]:
+            errors.append(
+                "source_inference_id: must match the referenced assessment"
+            )
+
+        assessed_at = parse_datetime(
+            assessment["assessed_at"], "referenced_assessment.assessed_at", errors
+        )
+        if planned_at and assessed_at and planned_at < assessed_at:
+            errors.append(
+                "planned_at: cannot be earlier than referenced assessment"
+            )
+
+        if assessment["classification"] != "recoverable":
+            errors.append(
+                "assessment_id: referenced assessment must classify the residual as recoverable"
+            )
+        decision = assessment["decision"]
+        if not decision["eligible_for_reintegration_planning"]:
+            errors.append(
+                "assessment_id: referenced assessment is not eligible for reintegration planning"
+            )
+        if decision["required_action"] != "approve_for_planning":
+            errors.append(
+                "assessment_id: referenced assessment must require approve_for_planning"
+            )
+        if assessment["lifecycle"]["status"] != "active":
+            errors.append(
+                "assessment_id: referenced assessment lifecycle must be active"
+            )
+
+        approved_targets = {
+            target_signature(candidate)
+            for candidate in assessment.get("candidate_reuse_targets", [])
+        }
+        if target_signature(target) not in approved_targets:
+            errors.append(
+                "target: must exactly match a candidate_reuse_target in the referenced assessment"
+            )
+
+        if decision["human_review_required"] and not controls["human_review_required"]:
+            errors.append(
+                "safety_controls.human_review_required: required by the referenced assessment"
+            )
+
+    if binding["binding_mode"] == "verified_derivative":
+        if not binding.get("derivative_artifact_ref"):
+            errors.append(
+                "residual_binding.derivative_artifact_ref: required for verified_derivative"
+            )
+        if transformation["mode"] == "none":
+            errors.append(
+                "transformation.mode: verified_derivative requires a transformation"
+            )
+    elif binding.get("derivative_artifact_ref"):
+        errors.append(
+            "residual_binding.derivative_artifact_ref: prohibited for exact_content"
+        )
+
+    mandatory_prohibited = {
+        "execute_without_authorization",
+        "modify_origin",
+        "remove_trace",
+        "expand_scope",
+    }
+    missing_prohibited = mandatory_prohibited - set(scope["prohibited_operations"])
+    for operation in sorted(missing_prohibited):
+        errors.append(
+            f"scope_control.prohibited_operations: missing mandatory prohibition '{operation}'"
+        )
+
+    mandatory_halts = {
+        "origin_chain_break",
+        "integrity_mismatch",
+        "authorization_missing",
+        "scope_violation",
+    }
+    missing_halts = mandatory_halts - set(controls["halt_conditions"])
+    for condition in sorted(missing_halts):
+        errors.append(
+            f"safety_controls.halt_conditions: missing mandatory halt condition '{condition}'"
+        )
+
+    if scope["maximum_uses"] > 1 and "maximum_use_exceeded" not in controls["halt_conditions"]:
+        errors.append(
+            "safety_controls.halt_conditions: maximum_use_exceeded is required when maximum_uses exceeds 1"
+        )
+    if scope["maximum_cycle_depth"] > 1 and "maximum_cycle_depth_exceeded" not in controls["halt_conditions"]:
+        errors.append(
+            "safety_controls.halt_conditions: maximum_cycle_depth_exceeded is required when maximum_cycle_depth exceeds 1"
+        )
+
+    if scope["environment"] == "controlled_production":
+        if not controls["human_review_required"]:
+            errors.append(
+                "safety_controls.human_review_required: controlled_production plans require human review"
+            )
+        if gate["status"] != "requested":
+            errors.append(
+                "authorization_gate.status: controlled_production plans must have a requested authorization"
+            )
+
+    gate_status = gate["status"]
+    lifecycle_status = lifecycle["status"]
+    request_ref = gate.get("authorization_request_ref")
+
+    if gate_status == "not_requested":
+        if request_ref:
+            errors.append(
+                "authorization_gate.authorization_request_ref: prohibited when status is not_requested"
+            )
+        if lifecycle_status != "draft":
+            errors.append(
+                "lifecycle.status: not_requested plans must remain draft"
+            )
+    elif gate_status == "requested":
+        if not request_ref:
+            errors.append(
+                "authorization_gate.authorization_request_ref: required when status is requested"
+            )
+        if lifecycle_status != "ready_for_authorization":
+            errors.append(
+                "lifecycle.status: requested plans must be ready_for_authorization"
+            )
+
+    benefit_types = set(expected_benefit["benefit_types"])
+    if target["target_type"] == "physical_recovery_system" and "thermal_recovery" not in benefit_types:
+        errors.append(
+            "expected_benefit.benefit_types: thermal target requires thermal_recovery"
+        )
+    if target["target_type"] == "royalty_pool" and "economic_recovery" not in benefit_types:
+        errors.append(
+            "expected_benefit.benefit_types: royalty target requires economic_recovery"
+        )
+    if target["target_type"] == "retrieval_cache" and not benefit_types.intersection(
+        {"reduced_computation", "reduced_latency"}
+    ):
+        errors.append(
+            "expected_benefit.benefit_types: retrieval cache requires reduced_computation or reduced_latency"
         )
 
     return errors
@@ -468,12 +749,19 @@ def collect_assessment_semantic_errors(
 def collect_semantic_errors(
     document: dict[str, Any],
     residual_index: dict[str, dict[str, Any]],
+    assessment_index: dict[str, dict[str, Any]],
 ) -> list[str]:
     record_type = document["record_type"]
     if record_type == "inference_residual_record":
         return collect_residual_semantic_errors(document)
     if record_type == "residual_classification_assessment":
         return collect_assessment_semantic_errors(document, residual_index)
+    if record_type == "residual_reintegration_plan":
+        return collect_plan_semantic_errors(
+            document,
+            residual_index,
+            assessment_index,
+        )
     return [f"record_type: unsupported record type '{record_type}'"]
 
 
@@ -484,38 +772,55 @@ def print_errors(label: str, errors: list[str]) -> None:
 
 
 def load_pass_documents() -> list[tuple[Path, dict[str, Any]]]:
-    documents: list[tuple[Path, dict[str, Any]]] = []
-    for path in discover_examples(PASS_DIR):
-        documents.append((path, load_yaml_or_json(path)))
-    return documents
+    return [
+        (path, load_yaml_or_json(path))
+        for path in discover_examples(PASS_DIR)
+    ]
 
 
-def build_residual_index(
+def build_indexes(
     documents: list[tuple[Path, dict[str, Any]]],
-) -> tuple[dict[str, dict[str, Any]], list[str]]:
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    list[str],
+]:
     residual_index: dict[str, dict[str, Any]] = {}
+    assessment_index: dict[str, dict[str, Any]] = {}
+    plan_index: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
 
+    configs = {
+        "inference_residual_record": ("residual_id", residual_index),
+        "residual_classification_assessment": ("assessment_id", assessment_index),
+        "residual_reintegration_plan": ("plan_id", plan_index),
+    }
+
     for path, document in documents:
-        if document.get("record_type") != "inference_residual_record":
+        record_type = document.get("record_type")
+        config = configs.get(record_type)
+        if config is None:
             continue
-        residual_id = document.get("residual_id")
-        if not isinstance(residual_id, str):
+        id_field, index = config
+        record_id = document.get(id_field)
+        if not isinstance(record_id, str):
             continue
-        if residual_id in residual_index:
+        if record_id in index:
             errors.append(
-                f"{path.relative_to(ROOT_DIR)}: duplicate residual_id '{residual_id}'"
+                f"{path.relative_to(ROOT_DIR)}: duplicate {id_field} '{record_id}'"
             )
             continue
-        residual_index[residual_id] = document
+        index[record_id] = document
 
-    return residual_index, errors
+    return residual_index, assessment_index, plan_index, errors
 
 
 def validate_pass_examples(
     validators: dict[str, Draft202012Validator],
     pass_documents: list[tuple[Path, dict[str, Any]]],
     residual_index: dict[str, dict[str, Any]],
+    assessment_index: dict[str, dict[str, Any]],
 ) -> int:
     failures = 0
 
@@ -527,7 +832,10 @@ def validate_pass_examples(
         if validator is None:
             print_errors(
                 "[schema-error]",
-                [f"record_type: unsupported or missing type '{document.get('record_type')}'"],
+                [
+                    "record_type: unsupported or missing type "
+                    f"'{document.get('record_type')}'"
+                ],
             )
             failures += 1
             continue
@@ -539,7 +847,11 @@ def validate_pass_examples(
             continue
 
         print("[schema-ok]")
-        semantic_errors = collect_semantic_errors(document, residual_index)
+        semantic_errors = collect_semantic_errors(
+            document,
+            residual_index,
+            assessment_index,
+        )
         if semantic_errors:
             print_errors("[semantic-error]", semantic_errors)
             failures += 1
@@ -553,6 +865,7 @@ def validate_pass_examples(
 def validate_fail_examples(
     validators: dict[str, Draft202012Validator],
     residual_index: dict[str, dict[str, Any]],
+    assessment_index: dict[str, dict[str, Any]],
 ) -> int:
     failures = 0
 
@@ -570,7 +883,10 @@ def validate_fail_examples(
         if validator is None:
             print_errors(
                 "[expected-schema-error]",
-                [f"record_type: unsupported or missing type '{document.get('record_type')}'"],
+                [
+                    "record_type: unsupported or missing type "
+                    f"'{document.get('record_type')}'"
+                ],
             )
             continue
 
@@ -580,7 +896,11 @@ def validate_fail_examples(
             continue
 
         print("[schema-ok]")
-        semantic_errors = collect_semantic_errors(document, residual_index)
+        semantic_errors = collect_semantic_errors(
+            document,
+            residual_index,
+            assessment_index,
+        )
         if semantic_errors:
             print_errors("[expected-semantic-error]", semantic_errors)
             continue
@@ -592,7 +912,7 @@ def validate_fail_examples(
 
 
 def main() -> int:
-    print("=== Inferential Regenerative Cycle Protocol v0.2 Validation ===")
+    print("=== Inferential Regenerative Cycle Protocol v0.3 Validation ===")
     print(
         "schema [inference-residual-record]: "
         "schemas/inference-residual-record.schema.json"
@@ -601,23 +921,36 @@ def main() -> int:
         "schema [residual-classification-assessment]: "
         "schemas/residual-classification-assessment.schema.json"
     )
+    print(
+        "schema [residual-reintegration-plan]: "
+        "schemas/residual-reintegration-plan.schema.json"
+    )
 
     try:
         validators = load_validators()
         pass_documents = load_pass_documents()
-    except (RuntimeError, Exception) as exc:
+    except (RuntimeError, yaml.YAMLError, ValueError) as exc:
         print(f"[fatal] {exc}", file=sys.stderr)
         return 1
 
-    residual_index, index_errors = build_residual_index(pass_documents)
+    residual_index, assessment_index, _plan_index, index_errors = build_indexes(
+        pass_documents
+    )
     if index_errors:
         print_errors("[fatal-index-error]", index_errors)
         return 1
 
     pass_failures = validate_pass_examples(
-        validators, pass_documents, residual_index
+        validators,
+        pass_documents,
+        residual_index,
+        assessment_index,
     )
-    fail_failures = validate_fail_examples(validators, residual_index)
+    fail_failures = validate_fail_examples(
+        validators,
+        residual_index,
+        assessment_index,
+    )
 
     print("\n=== Validation Summary ===")
     print(f"pass example failures: {pass_failures}")
