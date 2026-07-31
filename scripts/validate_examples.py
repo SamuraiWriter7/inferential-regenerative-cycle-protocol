@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Inferential Regenerative Cycle Protocol v0.3 examples."""
+"""Validate Inferential Regenerative Cycle Protocol v0.5 examples."""
 
 from __future__ import annotations
 
@@ -27,6 +27,15 @@ SCHEMA_PATHS = {
     ),
     "regenerative_cycle_execution_receipt": (
         ROOT_DIR / "schemas" / "regenerative-cycle-execution-receipt.schema.json"
+    ),
+    "regenerative_cycle_audit_record": (
+        ROOT_DIR / "schemas" / "regenerative-cycle-audit-record.schema.json"
+    ),
+    "cycle_stability_assessment": (
+        ROOT_DIR / "schemas" / "cycle-stability-assessment.schema.json"
+    ),
+    "regenerative_cycle_control_receipt": (
+        ROOT_DIR / "schemas" / "regenerative-cycle-control-receipt.schema.json"
     ),
 }
 
@@ -976,11 +985,522 @@ def collect_execution_receipt_semantic_errors(
 
     return errors
 
+
+def collect_audit_semantic_errors(
+    document: dict[str, Any],
+    receipt_index: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Validate audit evidence against an execution receipt."""
+    errors: list[str] = []
+
+    audited_at = parse_datetime(document["audited_at"], "audited_at", errors)
+    receipt = receipt_index.get(document["execution_receipt_id"])
+    auth_verification = document["authorization_verification"]
+    execution_verification = document["execution_verification"]
+    contamination = document["contamination_assessment"]
+    benefit = document["benefit_verification"]
+    findings = document["findings"]
+    conclusion = document["audit_conclusion"]
+
+    if receipt is None:
+        errors.append(
+            "execution_receipt_id: unknown referenced execution receipt "
+            f"'{document['execution_receipt_id']}'"
+        )
+    else:
+        if receipt["plan_id"] != document["plan_id"]:
+            errors.append("plan_id: must match the referenced execution receipt")
+        if receipt["residual_id"] != document["residual_id"]:
+            errors.append("residual_id: must match the referenced execution receipt")
+
+        recorded_at = parse_datetime(
+            receipt["recorded_at"], "referenced_receipt.recorded_at", errors
+        )
+        if audited_at and recorded_at and audited_at < recorded_at:
+            errors.append(
+                "audited_at: cannot be earlier than referenced execution receipt"
+            )
+
+        if not receipt["outcome"]["audit_required"]:
+            errors.append(
+                "execution_receipt_id: referenced receipt does not require audit"
+            )
+
+        evidence_refs = set(document["evidence_refs"])
+        if document["execution_receipt_id"] not in evidence_refs:
+            errors.append(
+                "evidence_refs: must include the referenced execution receipt"
+            )
+        auth_receipt_ref = receipt["authorization_binding"][
+            "authorization_receipt_ref"
+        ]
+        if auth_receipt_ref not in evidence_refs:
+            errors.append(
+                "evidence_refs: must include the execution authorization receipt"
+            )
+
+        execution_status = receipt["execution"]["status"]
+        if execution_status == "halted" and conclusion["recommended_control"] == "continue":
+            errors.append(
+                "audit_conclusion.recommended_control: halted execution cannot directly continue"
+            )
+
+    result = conclusion["result"]
+    recommended = conclusion["recommended_control"]
+    authorization_ok = all(auth_verification.values())
+    execution_ok = all(execution_verification.values())
+    open_severe = [
+        finding
+        for finding in findings
+        if finding["severity"] in {"high", "critical"}
+        and finding["resolution_status"] not in {"resolved", "accepted_risk"}
+    ]
+
+    if contamination["status"] == "clean":
+        if contamination["propagation_scope"] != "none":
+            errors.append(
+                "contamination_assessment.propagation_scope: clean status requires none"
+            )
+        if contamination["isolation_status"] != "not_required":
+            errors.append(
+                "contamination_assessment.isolation_status: clean status requires not_required"
+            )
+    elif contamination["status"] == "confirmed":
+        if contamination["propagation_scope"] == "none":
+            errors.append(
+                "contamination_assessment.propagation_scope: confirmed contamination cannot use none"
+            )
+        if contamination["isolation_status"] not in {"active", "completed"}:
+            errors.append(
+                "contamination_assessment.isolation_status: confirmed contamination requires active or completed isolation"
+            )
+        if result != "failed":
+            errors.append(
+                "audit_conclusion.result: confirmed contamination requires failed"
+            )
+        if recommended not in {"suspend", "roll_back"}:
+            errors.append(
+                "audit_conclusion.recommended_control: confirmed contamination requires suspend or roll_back"
+            )
+    elif contamination["status"] == "suspected" and result == "passed":
+        errors.append(
+            "audit_conclusion.result: suspected contamination cannot pass without conditions"
+        )
+
+    if result == "passed":
+        if not authorization_ok:
+            errors.append(
+                "authorization_verification: every verification must be true for passed audit"
+            )
+        if not execution_ok:
+            errors.append(
+                "execution_verification: every verification must be true for passed audit"
+            )
+        if contamination["status"] != "clean":
+            errors.append(
+                "contamination_assessment.status: passed audit requires clean"
+            )
+        if open_severe:
+            errors.append(
+                "findings: passed audit cannot contain unresolved high or critical findings"
+            )
+        if benefit["status"] in {"unverified", "disputed"}:
+            errors.append(
+                "benefit_verification.status: passed audit requires verified or partially_verified benefit"
+            )
+        if recommended not in {"continue", "close"}:
+            errors.append(
+                "audit_conclusion.recommended_control: passed audit requires continue or close"
+            )
+    elif result == "passed_with_conditions":
+        if not authorization_ok or not execution_ok:
+            errors.append(
+                "audit verification: passed_with_conditions still requires valid authorization and execution matching"
+            )
+        if open_severe:
+            errors.append(
+                "findings: passed_with_conditions cannot contain unresolved high or critical findings"
+            )
+        if recommended not in {"continue", "close", "human_review"}:
+            errors.append(
+                "audit_conclusion.recommended_control: invalid for passed_with_conditions"
+            )
+    elif result == "failed":
+        if recommended not in {"suspend", "roll_back", "human_review"}:
+            errors.append(
+                "audit_conclusion.recommended_control: failed audit cannot continue or close normally"
+            )
+    elif result == "inconclusive":
+        if recommended not in {"suspend", "human_review"}:
+            errors.append(
+                "audit_conclusion.recommended_control: inconclusive audit requires suspend or human_review"
+            )
+
+    if open_severe and recommended in {"continue", "close"}:
+        errors.append(
+            "audit_conclusion.recommended_control: unresolved severe findings prohibit continue or close"
+        )
+
+    integrity = document["audit_integrity"]
+    expected_length = 64 if integrity["algorithm"] == "sha256" else 128
+    if len(integrity["digest"]) != expected_length:
+        errors.append(
+            f"audit_integrity.digest: invalid digest length for {integrity['algorithm']}"
+        )
+
+    return errors
+
+
+def collect_stability_semantic_errors(
+    document: dict[str, Any],
+    audit_index: dict[str, dict[str, Any]],
+    receipt_index: dict[str, dict[str, Any]],
+    plan_index: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Validate bounded cycle stability after audit."""
+    errors: list[str] = []
+
+    assessed_at = parse_datetime(document["assessed_at"], "assessed_at", errors)
+    window = document["observation_window"]
+    signals = document["signals"]
+    thresholds = document["thresholds"]
+    evaluation = document["evaluation"]
+    reassessment = document["reassessment"]
+    recommended = document["recommended_action"]
+
+    window_start = parse_datetime(window["started_at"], "observation_window.started_at", errors)
+    window_end = parse_datetime(window["ended_at"], "observation_window.ended_at", errors)
+    if window_start and window_end and window_start > window_end:
+        errors.append("observation_window.ended_at: must not be earlier than started_at")
+    if window_end and assessed_at and window_end > assessed_at:
+        errors.append("assessed_at: must not be earlier than observation window end")
+
+    if reassessment["required"]:
+        if "reassess_at" not in reassessment:
+            errors.append("reassessment.reassess_at: required when reassessment is required")
+        else:
+            reassess_at = parse_datetime(
+                reassessment["reassess_at"], "reassessment.reassess_at", errors
+            )
+            if assessed_at and reassess_at and reassess_at <= assessed_at:
+                errors.append("reassessment.reassess_at: must be later than assessed_at")
+    elif "reassess_at" in reassessment:
+        errors.append("reassessment.reassess_at: prohibited when reassessment is not required")
+
+    audit = audit_index.get(document["audit_id"])
+    receipt = receipt_index.get(document["execution_receipt_id"])
+    plan = plan_index.get(document["plan_id"])
+
+    if audit is None:
+        errors.append(f"audit_id: unknown referenced audit '{document['audit_id']}'")
+    else:
+        if audit["execution_receipt_id"] != document["execution_receipt_id"]:
+            errors.append("execution_receipt_id: must match the referenced audit")
+        if audit["plan_id"] != document["plan_id"]:
+            errors.append("plan_id: must match the referenced audit")
+        if audit["residual_id"] != document["residual_id"]:
+            errors.append("residual_id: must match the referenced audit")
+        audited_at = parse_datetime(audit["audited_at"], "referenced_audit.audited_at", errors)
+        if assessed_at and audited_at and assessed_at < audited_at:
+            errors.append("assessed_at: cannot be earlier than referenced audit")
+
+    if receipt is None:
+        errors.append(
+            "execution_receipt_id: unknown referenced execution receipt "
+            f"'{document['execution_receipt_id']}'"
+        )
+    else:
+        if receipt["plan_id"] != document["plan_id"]:
+            errors.append("plan_id: must match the referenced execution receipt")
+        if receipt["residual_id"] != document["residual_id"]:
+            errors.append("residual_id: must match the referenced execution receipt")
+        if document["execution_receipt_id"] not in set(
+            window["included_execution_receipt_refs"]
+        ):
+            errors.append(
+                "observation_window.included_execution_receipt_refs: must include the referenced execution receipt"
+            )
+
+    if plan is None:
+        errors.append(f"plan_id: unknown referenced plan '{document['plan_id']}'")
+    else:
+        if thresholds["maximum_cycle_depth"] > plan["scope_control"]["maximum_cycle_depth"]:
+            errors.append(
+                "thresholds.maximum_cycle_depth: cannot exceed referenced plan maximum_cycle_depth"
+            )
+        if thresholds["maximum_reuse_count"] > plan["scope_control"]["maximum_uses"]:
+            errors.append(
+                "thresholds.maximum_reuse_count: cannot exceed referenced plan maximum_uses"
+            )
+
+    pressure_rank = {"low": 0, "moderate": 1, "high": 2, "critical": 3}
+    feedback_rank = {"none": 0, "low": 1, "moderate": 2, "high": 3, "critical": 4}
+    actual_violations: set[str] = set()
+
+    if window["current_cycle_depth"] > thresholds["maximum_cycle_depth"]:
+        actual_violations.add("cycle_depth")
+    if window["observed_reuse_count"] > thresholds["maximum_reuse_count"]:
+        actual_violations.add("reuse_count")
+    if pressure_rank[signals["resource_pressure"]] > pressure_rank[thresholds["maximum_resource_pressure"]]:
+        actual_violations.add("resource_pressure")
+    if feedback_rank[signals["feedback_amplification"]] > feedback_rank[thresholds["maximum_feedback_amplification"]]:
+        actual_violations.add("feedback_amplification")
+    if signals["provenance_continuity"] != "intact":
+        actual_violations.add("provenance_continuity")
+    if signals["authorization_continuity"] != "intact":
+        actual_violations.add("authorization_continuity")
+    if signals["contamination_status"] in {"suspected", "confirmed"}:
+        actual_violations.add("contamination")
+    if signals["benefit_persistence"] == "not_confirmed":
+        actual_violations.add("benefit_persistence")
+    if signals["unresolved_disputes"] > 0:
+        actual_violations.add("unresolved_disputes")
+    if audit is not None and audit["audit_conclusion"]["result"] in {"failed", "inconclusive"}:
+        actual_violations.add("audit_failure")
+
+    declared_violations = set(evaluation["violated_thresholds"])
+    missing = actual_violations - declared_violations
+    extra = declared_violations - actual_violations
+    for violation in sorted(missing):
+        errors.append(
+            f"evaluation.violated_thresholds: missing detected violation '{violation}'"
+        )
+    for violation in sorted(extra):
+        errors.append(
+            f"evaluation.violated_thresholds: declares undetected violation '{violation}'"
+        )
+
+    status = evaluation["stability_status"]
+    if signals["provenance_continuity"] == "broken" or signals["authorization_continuity"] == "broken" or signals["contamination_status"] == "confirmed":
+        if status != "critical":
+            errors.append(
+                "evaluation.stability_status: broken continuity or confirmed contamination requires critical"
+            )
+    if signals["feedback_amplification"] in {"high", "critical"} or signals["resource_pressure"] == "critical":
+        if status not in {"unstable", "critical"}:
+            errors.append(
+                "evaluation.stability_status: severe pressure or feedback requires unstable or critical"
+            )
+
+    if status == "stable":
+        if declared_violations:
+            errors.append("evaluation.violated_thresholds: stable status requires no violations")
+        if audit is not None and audit["audit_conclusion"]["result"] != "passed":
+            errors.append("audit_id: stable status requires a passed audit")
+        if recommended not in {"continue", "close"}:
+            errors.append("recommended_action: stable status requires continue or close")
+        if reassessment["required"]:
+            errors.append("reassessment.required: stable status does not require reassessment")
+    elif status == "conditionally_stable":
+        if audit is not None and audit["audit_conclusion"]["result"] not in {"passed", "passed_with_conditions"}:
+            errors.append(
+                "audit_id: conditionally_stable requires passed or passed_with_conditions audit"
+            )
+        if recommended not in {"continue", "close", "human_review"}:
+            errors.append(
+                "recommended_action: conditionally_stable requires continue, close, or human_review"
+            )
+        if recommended == "continue" and not reassessment["required"]:
+            errors.append(
+                "reassessment.required: conditionally_stable continuation requires reassessment"
+            )
+    elif status == "unstable":
+        if recommended not in {"suspend", "roll_back", "human_review"}:
+            errors.append("recommended_action: unstable cycle cannot continue or close")
+        if not reassessment["required"]:
+            errors.append("reassessment.required: unstable cycle requires reassessment")
+    elif status == "critical":
+        if recommended not in {"suspend", "roll_back"}:
+            errors.append("recommended_action: critical cycle requires suspend or roll_back")
+        if not reassessment["required"]:
+            errors.append("reassessment.required: critical cycle requires reassessment")
+
+    if audit is not None:
+        audit_control = audit["audit_conclusion"]["recommended_control"]
+        if audit_control in {"suspend", "roll_back"} and recommended in {"continue", "close"}:
+            errors.append(
+                "recommended_action: cannot override restrictive audit control"
+            )
+        if audit_control == "close" and recommended != "close":
+            errors.append("recommended_action: must preserve audit close recommendation")
+
+    integrity = document["assessment_integrity"]
+    expected_length = 64 if integrity["algorithm"] == "sha256" else 128
+    if len(integrity["digest"]) != expected_length:
+        errors.append(
+            f"assessment_integrity.digest: invalid digest length for {integrity['algorithm']}"
+        )
+
+    return errors
+
+
+def collect_control_semantic_errors(
+    document: dict[str, Any],
+    stability_index: dict[str, dict[str, Any]],
+    audit_index: dict[str, dict[str, Any]],
+    receipt_index: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Validate the authoritative cycle control decision."""
+    errors: list[str] = []
+
+    issued_at = parse_datetime(document["issued_at"], "issued_at", errors)
+    basis = document["decision_basis"]
+    scope = document["control_scope"]
+    transition = document["state_transition"]
+    auth = document["authorization_binding"]
+    decision = document["decision"]
+    actions = document["required_actions"]
+    action_types = {item["action_type"] for item in actions}
+
+    effective_at = parse_datetime(scope["effective_at"], "control_scope.effective_at", errors)
+    if issued_at and effective_at and effective_at < issued_at:
+        errors.append("control_scope.effective_at: cannot be earlier than issued_at")
+    if "expires_at" in scope:
+        expires_at = parse_datetime(scope["expires_at"], "control_scope.expires_at", errors)
+        if effective_at and expires_at and expires_at <= effective_at:
+            errors.append("control_scope.expires_at: must be later than effective_at")
+
+    for idx, action in enumerate(actions):
+        if "due_at" in action:
+            due_at = parse_datetime(action["due_at"], f"required_actions.{idx}.due_at", errors)
+            if issued_at and due_at and due_at < issued_at:
+                errors.append(f"required_actions.{idx}.due_at: cannot be earlier than issued_at")
+
+    stability = stability_index.get(document["stability_assessment_id"])
+    audit = audit_index.get(document["audit_id"])
+    receipt = receipt_index.get(document["execution_receipt_id"])
+
+    if stability is None:
+        errors.append(
+            "stability_assessment_id: unknown referenced stability assessment "
+            f"'{document['stability_assessment_id']}'"
+        )
+    else:
+        if stability["audit_id"] != document["audit_id"]:
+            errors.append("audit_id: must match the referenced stability assessment")
+        if stability["execution_receipt_id"] != document["execution_receipt_id"]:
+            errors.append(
+                "execution_receipt_id: must match the referenced stability assessment"
+            )
+        assessed_at = parse_datetime(
+            stability["assessed_at"], "referenced_stability.assessed_at", errors
+        )
+        if issued_at and assessed_at and issued_at < assessed_at:
+            errors.append("issued_at: cannot be earlier than stability assessment")
+        if stability["recommended_action"] == "human_review":
+            errors.append(
+                "stability_assessment_id: human_review recommendation cannot produce a final control receipt"
+            )
+        elif decision != stability["recommended_action"]:
+            errors.append(
+                "decision: must match the referenced stability recommended_action"
+            )
+        if basis["stability_status"] != stability["evaluation"]["stability_status"]:
+            errors.append(
+                "decision_basis.stability_status: must match referenced stability assessment"
+            )
+        if scope["cycle_id"] != stability["observation_window"]["cycle_id"]:
+            errors.append("control_scope.cycle_id: must match referenced stability cycle")
+
+    if audit is None:
+        errors.append(f"audit_id: unknown referenced audit '{document['audit_id']}'")
+    else:
+        if audit["execution_receipt_id"] != document["execution_receipt_id"]:
+            errors.append("execution_receipt_id: must match referenced audit")
+        if basis["audit_result"] != audit["audit_conclusion"]["result"]:
+            errors.append("decision_basis.audit_result: must match referenced audit")
+
+    if receipt is None:
+        errors.append(
+            "execution_receipt_id: unknown referenced execution receipt "
+            f"'{document['execution_receipt_id']}'"
+        )
+    else:
+        if scope["target_id"] != receipt["target_observation"]["target_id"]:
+            errors.append(
+                "control_scope.target_id: must match referenced execution target"
+            )
+        observed_node = receipt["scope_observation"]["node_id"]
+        if scope["affected_nodes"] and observed_node not in set(scope["affected_nodes"]):
+            errors.append(
+                "control_scope.affected_nodes: must include the execution node"
+            )
+
+    trigger_refs = set(basis["trigger_refs"])
+    for required_ref in (document["audit_id"], document["stability_assessment_id"]):
+        if required_ref not in trigger_refs:
+            errors.append(f"decision_basis.trigger_refs: missing '{required_ref}'")
+
+    if auth["required"]:
+        if not auth.get("authorization_receipt_ref"):
+            errors.append(
+                "authorization_binding.authorization_receipt_ref: required when authorization is required"
+            )
+    elif auth.get("authorization_receipt_ref"):
+        errors.append(
+            "authorization_binding.authorization_receipt_ref: prohibited when authorization is not required"
+        )
+
+    status = basis["stability_status"]
+    if decision == "continue":
+        if status not in {"stable", "conditionally_stable"}:
+            errors.append("decision: continue requires stable or conditionally_stable")
+        if transition["to_state"] != "active":
+            errors.append("state_transition.to_state: continue requires active")
+        if "monitor" not in action_types:
+            errors.append("required_actions: continue requires monitor")
+        prohibited = {"execute_rollback", "freeze_reintegration", "revoke_authorization", "quarantine"}
+        if action_types.intersection(prohibited):
+            errors.append("required_actions: continue contains a restrictive or rollback action")
+        if auth["required"]:
+            errors.append("authorization_binding.required: continue control does not grant a new action authority")
+    elif decision == "suspend":
+        if status not in {"unstable", "critical"}:
+            errors.append("decision: suspend requires unstable or critical")
+        if transition["to_state"] != "suspended":
+            errors.append("state_transition.to_state: suspend requires suspended")
+        for required_action in {"freeze_reintegration", "revoke_authorization"}:
+            if required_action not in action_types:
+                errors.append(f"required_actions: suspend requires {required_action}")
+    elif decision == "roll_back":
+        if status not in {"unstable", "critical"}:
+            errors.append("decision: roll_back requires unstable or critical")
+        if transition["to_state"] != "rollback_pending":
+            errors.append("state_transition.to_state: roll_back requires rollback_pending")
+        for required_action in {"execute_rollback", "freeze_reintegration"}:
+            if required_action not in action_types:
+                errors.append(f"required_actions: roll_back requires {required_action}")
+        if not auth["required"]:
+            errors.append("authorization_binding.required: rollback execution requires authorization")
+    elif decision == "close":
+        if status not in {"stable", "conditionally_stable"}:
+            errors.append("decision: close requires stable or conditionally_stable")
+        if transition["to_state"] != "closed":
+            errors.append("state_transition.to_state: close requires closed")
+        for required_action in {"archive_cycle", "release_resources"}:
+            if required_action not in action_types:
+                errors.append(f"required_actions: close requires {required_action}")
+        if auth["required"]:
+            errors.append("authorization_binding.required: close does not require execution authorization")
+
+    integrity = document["control_integrity"]
+    expected_length = 64 if integrity["algorithm"] == "sha256" else 128
+    if len(integrity["digest"]) != expected_length:
+        errors.append(
+            f"control_integrity.digest: invalid digest length for {integrity['algorithm']}"
+        )
+
+    return errors
+
+
 def collect_semantic_errors(
     document: dict[str, Any],
     residual_index: dict[str, dict[str, Any]],
     assessment_index: dict[str, dict[str, Any]],
     plan_index: dict[str, dict[str, Any]],
+    receipt_index: dict[str, dict[str, Any]],
+    audit_index: dict[str, dict[str, Any]],
+    stability_index: dict[str, dict[str, Any]],
 ) -> list[str]:
     record_type = document["record_type"]
     if record_type == "inference_residual_record":
@@ -988,14 +1508,20 @@ def collect_semantic_errors(
     if record_type == "residual_classification_assessment":
         return collect_assessment_semantic_errors(document, residual_index)
     if record_type == "residual_reintegration_plan":
-        return collect_plan_semantic_errors(
-            document,
-            residual_index,
-            assessment_index,
-        )
+        return collect_plan_semantic_errors(document, residual_index, assessment_index)
     if record_type == "regenerative_cycle_execution_receipt":
         return collect_execution_receipt_semantic_errors(
             document, residual_index, assessment_index, plan_index
+        )
+    if record_type == "regenerative_cycle_audit_record":
+        return collect_audit_semantic_errors(document, receipt_index)
+    if record_type == "cycle_stability_assessment":
+        return collect_stability_semantic_errors(
+            document, audit_index, receipt_index, plan_index
+        )
+    if record_type == "regenerative_cycle_control_receipt":
+        return collect_control_semantic_errors(
+            document, stability_index, audit_index, receipt_index
         )
     return [f"record_type: unsupported record type '{record_type}'"]
 
@@ -1007,15 +1533,15 @@ def print_errors(label: str, errors: list[str]) -> None:
 
 
 def load_pass_documents() -> list[tuple[Path, dict[str, Any]]]:
-    return [
-        (path, load_yaml_or_json(path))
-        for path in discover_examples(PASS_DIR)
-    ]
+    return [(path, load_yaml_or_json(path)) for path in discover_examples(PASS_DIR)]
 
 
 def build_indexes(
     documents: list[tuple[Path, dict[str, Any]]],
 ) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
     dict[str, dict[str, Any]],
     dict[str, dict[str, Any]],
     dict[str, dict[str, Any]],
@@ -1026,6 +1552,9 @@ def build_indexes(
     assessment_index: dict[str, dict[str, Any]] = {}
     plan_index: dict[str, dict[str, Any]] = {}
     receipt_index: dict[str, dict[str, Any]] = {}
+    audit_index: dict[str, dict[str, Any]] = {}
+    stability_index: dict[str, dict[str, Any]] = {}
+    control_index: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
 
     configs = {
@@ -1033,6 +1562,9 @@ def build_indexes(
         "residual_classification_assessment": ("assessment_id", assessment_index),
         "residual_reintegration_plan": ("plan_id", plan_index),
         "regenerative_cycle_execution_receipt": ("receipt_id", receipt_index),
+        "regenerative_cycle_audit_record": ("audit_id", audit_index),
+        "cycle_stability_assessment": ("stability_assessment_id", stability_index),
+        "regenerative_cycle_control_receipt": ("control_receipt_id", control_index),
     }
 
     for path, document in documents:
@@ -1051,7 +1583,16 @@ def build_indexes(
             continue
         index[record_id] = document
 
-    return residual_index, assessment_index, plan_index, receipt_index, errors
+    return (
+        residual_index,
+        assessment_index,
+        plan_index,
+        receipt_index,
+        audit_index,
+        stability_index,
+        control_index,
+        errors,
+    )
 
 
 def validate_pass_examples(
@@ -1060,6 +1601,9 @@ def validate_pass_examples(
     residual_index: dict[str, dict[str, Any]],
     assessment_index: dict[str, dict[str, Any]],
     plan_index: dict[str, dict[str, Any]],
+    receipt_index: dict[str, dict[str, Any]],
+    audit_index: dict[str, dict[str, Any]],
+    stability_index: dict[str, dict[str, Any]],
 ) -> int:
     failures = 0
 
@@ -1071,10 +1615,7 @@ def validate_pass_examples(
         if validator is None:
             print_errors(
                 "[schema-error]",
-                [
-                    "record_type: unsupported or missing type "
-                    f"'{document.get('record_type')}'"
-                ],
+                [f"record_type: unsupported or missing type '{document.get('record_type')}'"],
             )
             failures += 1
             continue
@@ -1091,6 +1632,9 @@ def validate_pass_examples(
             residual_index,
             assessment_index,
             plan_index,
+            receipt_index,
+            audit_index,
+            stability_index,
         )
         if semantic_errors:
             print_errors("[semantic-error]", semantic_errors)
@@ -1107,6 +1651,9 @@ def validate_fail_examples(
     residual_index: dict[str, dict[str, Any]],
     assessment_index: dict[str, dict[str, Any]],
     plan_index: dict[str, dict[str, Any]],
+    receipt_index: dict[str, dict[str, Any]],
+    audit_index: dict[str, dict[str, Any]],
+    stability_index: dict[str, dict[str, Any]],
 ) -> int:
     failures = 0
 
@@ -1124,10 +1671,7 @@ def validate_fail_examples(
         if validator is None:
             print_errors(
                 "[expected-schema-error]",
-                [
-                    "record_type: unsupported or missing type "
-                    f"'{document.get('record_type')}'"
-                ],
+                [f"record_type: unsupported or missing type '{document.get('record_type')}'"],
             )
             continue
 
@@ -1142,6 +1686,9 @@ def validate_fail_examples(
             residual_index,
             assessment_index,
             plan_index,
+            receipt_index,
+            audit_index,
+            stability_index,
         )
         if semantic_errors:
             print_errors("[expected-semantic-error]", semantic_errors)
@@ -1154,23 +1701,18 @@ def validate_fail_examples(
 
 
 def main() -> int:
-    print("=== Inferential Regenerative Cycle Protocol v0.4 Validation ===")
-    print(
-        "schema [inference-residual-record]: "
-        "schemas/inference-residual-record.schema.json"
-    )
-    print(
-        "schema [residual-classification-assessment]: "
-        "schemas/residual-classification-assessment.schema.json"
-    )
-    print(
-        "schema [residual-reintegration-plan]: "
-        "schemas/residual-reintegration-plan.schema.json"
-    )
-    print(
-        "schema [regenerative-cycle-execution-receipt]: "
-        "schemas/regenerative-cycle-execution-receipt.schema.json"
-    )
+    print("=== Inferential Regenerative Cycle Protocol v0.5 Validation ===")
+    schema_labels = [
+        ("inference-residual-record", "schemas/inference-residual-record.schema.json"),
+        ("residual-classification-assessment", "schemas/residual-classification-assessment.schema.json"),
+        ("residual-reintegration-plan", "schemas/residual-reintegration-plan.schema.json"),
+        ("regenerative-cycle-execution-receipt", "schemas/regenerative-cycle-execution-receipt.schema.json"),
+        ("regenerative-cycle-audit-record", "schemas/regenerative-cycle-audit-record.schema.json"),
+        ("cycle-stability-assessment", "schemas/cycle-stability-assessment.schema.json"),
+        ("regenerative-cycle-control-receipt", "schemas/regenerative-cycle-control-receipt.schema.json"),
+    ]
+    for label, path in schema_labels:
+        print(f"schema [{label}]: {path}")
 
     try:
         validators = load_validators()
@@ -1179,9 +1721,17 @@ def main() -> int:
         print(f"[fatal] {exc}", file=sys.stderr)
         return 1
 
-    residual_index, assessment_index, plan_index, _receipt_index, index_errors = build_indexes(
-        pass_documents
-    )
+    (
+        residual_index,
+        assessment_index,
+        plan_index,
+        receipt_index,
+        audit_index,
+        stability_index,
+        _control_index,
+        index_errors,
+    ) = build_indexes(pass_documents)
+
     if index_errors:
         print_errors("[fatal-index-error]", index_errors)
         return 1
@@ -1192,12 +1742,18 @@ def main() -> int:
         residual_index,
         assessment_index,
         plan_index,
+        receipt_index,
+        audit_index,
+        stability_index,
     )
     fail_failures = validate_fail_examples(
         validators,
         residual_index,
         assessment_index,
         plan_index,
+        receipt_index,
+        audit_index,
+        stability_index,
     )
 
     print("\n=== Validation Summary ===")
