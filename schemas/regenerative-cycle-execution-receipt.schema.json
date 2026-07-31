@@ -1,0 +1,594 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.4.0/regenerative-cycle-execution-receipt.schema.json",
+  "title": "Regenerative Cycle Execution Receipt",
+  "description": "Records the authorized execution, bounded outcome, safety observations, and realized benefit of a residual reintegration plan.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "receipt_id",
+    "plan_id",
+    "residual_id",
+    "assessment_id",
+    "source_inference_id",
+    "recorded_at",
+    "authorization_binding",
+    "execution",
+    "target_observation",
+    "provenance_observation",
+    "scope_observation",
+    "safety_observation",
+    "benefit_realization",
+    "outcome",
+    "receipt_integrity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "record_type": {
+      "const": "regenerative_cycle_execution_receipt"
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^execution-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "plan_id": {
+      "type": "string",
+      "pattern": "^reintegration-plan:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^assessment:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "source_inference_id": {
+      "type": "string",
+      "pattern": "^inference:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "authorization_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization_request_ref",
+        "authorization_receipt_ref",
+        "decision",
+        "authorized_at",
+        "authorizer_id",
+        "authorized_operations",
+        "authorized_environment",
+        "authorized_scope",
+        "expires_at"
+      ],
+      "properties": {
+        "authorization_request_ref": {
+          "type": "string",
+          "pattern": "^authorization-request:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "authorization_receipt_ref": {
+          "type": "string",
+          "pattern": "^authorization-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "decision": {
+          "const": "authorized"
+        },
+        "authorized_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authorizer_id": {
+          "type": "string",
+          "pattern": "^(agent|service|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "authorized_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "read",
+              "reference",
+              "copy",
+              "transform",
+              "cache",
+              "route",
+              "transfer",
+              "allocate"
+            ]
+          }
+        },
+        "authorized_environment": {
+          "type": "string",
+          "enum": [
+            "sandbox",
+            "isolated_runtime",
+            "controlled_production"
+          ]
+        },
+        "authorized_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 256
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_id",
+        "executor",
+        "started_at",
+        "completed_at",
+        "status",
+        "operations_performed",
+        "use_count",
+        "cycle_depth",
+        "input_integrity",
+        "output_ref",
+        "output_integrity"
+      ],
+      "properties": {
+        "execution_id": {
+          "type": "string",
+          "pattern": "^execution:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "executor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executor_id",
+            "executor_type",
+            "runtime_id",
+            "node_id"
+          ],
+          "properties": {
+            "executor_id": {
+              "type": "string",
+              "pattern": "^(agent|service|device|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+            },
+            "executor_type": {
+              "type": "string",
+              "enum": [
+                "ai_agent",
+                "execution_service",
+                "physical_device",
+                "human_operator"
+              ]
+            },
+            "runtime_id": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 256
+            },
+            "node_id": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 256
+            }
+          }
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "partially_completed",
+            "halted",
+            "rolled_back",
+            "failed"
+          ]
+        },
+        "operations_performed": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "read",
+              "reference",
+              "copy",
+              "transform",
+              "cache",
+              "route",
+              "transfer",
+              "allocate"
+            ]
+          }
+        },
+        "use_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "cycle_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "input_integrity": {
+          "$ref": "#/$defs/integrity"
+        },
+        "output_ref": {
+          "type": "string",
+          "pattern": "^(artifact|state|metric|event):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "output_integrity": {
+          "$ref": "#/$defs/integrity"
+        }
+      }
+    },
+    "target_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_type",
+        "target_id",
+        "reuse_mode",
+        "target_update_status"
+      ],
+      "properties": {
+        "target_type": {
+          "type": "string",
+          "enum": [
+            "future_inference_context",
+            "retrieval_cache",
+            "safety_policy",
+            "boundary_condition_registry",
+            "agent_handoff",
+            "model_routing_policy",
+            "physical_recovery_system",
+            "royalty_pool"
+          ]
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "reuse_mode": {
+          "type": "string",
+          "enum": [
+            "contextual_reference",
+            "cache_seed",
+            "constraint",
+            "training_evidence",
+            "operational_input",
+            "thermal_recovery",
+            "economic_reallocation"
+          ]
+        },
+        "target_update_status": {
+          "type": "string",
+          "enum": [
+            "applied",
+            "partially_applied",
+            "not_applied",
+            "reverted"
+          ]
+        },
+        "before_state_ref": {
+          "type": "string",
+          "pattern": "^(state|context|registry|system|pool):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "after_state_ref": {
+          "type": "string",
+          "pattern": "^(state|context|registry|system|pool):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "provenance_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_refs",
+        "trace_refs",
+        "generated_trace_refs",
+        "preserve_origin_chain"
+      ],
+      "properties": {
+        "origin_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^origin:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^trace:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "generated_trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^trace:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "preserve_origin_chain": {
+          "const": true
+        }
+      }
+    },
+    "scope_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment",
+        "node_id"
+      ],
+      "properties": {
+        "environment": {
+          "type": "string",
+          "enum": [
+            "sandbox",
+            "isolated_runtime",
+            "controlled_production"
+          ]
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "geographic_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 64
+          }
+        }
+      }
+    },
+    "safety_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contamination_scan_result",
+        "triggered_halt_conditions",
+        "rollback_status",
+        "unauthorized_effects_detected"
+      ],
+      "properties": {
+        "contamination_scan_result": {
+          "type": "string",
+          "enum": [
+            "clean",
+            "warning",
+            "failed",
+            "not_applicable"
+          ]
+        },
+        "triggered_halt_conditions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "origin_chain_break",
+              "integrity_mismatch",
+              "authorization_missing",
+              "scope_violation",
+              "confidence_degradation",
+              "contamination_detected",
+              "maximum_use_exceeded",
+              "maximum_cycle_depth_exceeded",
+              "target_state_changed",
+              "human_stop_requested"
+            ]
+          }
+        },
+        "rollback_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "available",
+            "executed",
+            "failed"
+          ]
+        },
+        "unauthorized_effects_detected": {
+          "type": "boolean"
+        },
+        "human_review_ref": {
+          "type": "string",
+          "pattern": "^human-review:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "observation_notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        }
+      }
+    },
+    "benefit_realization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "benefit_types",
+        "observed_metrics"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "realized",
+            "partially_realized",
+            "not_realized",
+            "not_measured"
+          ]
+        },
+        "benefit_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "reduced_computation",
+              "reduced_latency",
+              "improved_safety",
+              "improved_reliability",
+              "thermal_recovery",
+              "economic_recovery",
+              "knowledge_preservation"
+            ]
+          }
+        },
+        "observed_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "metric_name",
+              "value",
+              "unit",
+              "measurement_ref"
+            ],
+            "properties": {
+              "metric_name": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 128
+              },
+              "value": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "measurement_ref": {
+                "type": "string",
+                "pattern": "^(metric|measurement):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_required",
+        "next_action"
+      ],
+      "properties": {
+        "audit_required": {
+          "const": true
+        },
+        "next_action": {
+          "type": "string",
+          "enum": [
+            "submit_for_audit",
+            "investigate",
+            "suspend_cycle",
+            "confirm_rollback",
+            "close_without_target_update"
+          ]
+        },
+        "generated_residual_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "outcome_summary": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 3000
+        }
+      }
+    },
+    "receipt_integrity": {
+      "$ref": "#/$defs/integrity"
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^x-[A-Za-z0-9._-]+$"
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "digest"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "sha256",
+            "sha512"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        }
+      }
+    }
+  }
+}
