@@ -1,0 +1,58 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+
+assessment_id: assessment:2026-07-31:recoverable-001
+residual_id: residual:2026-07-31:rejected-candidate-001
+source_inference_id: inference:2026-07-31:route-planning-001
+
+assessed_at: "2026-07-31T10:00:00+09:00"
+
+assessor:
+  assessor_id: service:residual-assessment-service
+  assessor_type: assessment_service
+  authority_scope_refs:
+    - authority:residual-classification:regional-routing
+
+evidence_refs:
+  - origin:request:regional-load-balancing-001
+  - trace:inference:route-planning-001
+  - artifact:route-candidate-b-20260731-001
+
+provenance_assessment:
+  origin_present: true
+  trace_continuity: complete
+  integrity_verified: true
+
+contamination_assessment:
+  risk_level: low
+  indicators:
+    - exceeded_latency_boundary
+  isolation_required: false
+
+classification: recoverable
+confidence: 0.92
+
+classification_reason: >-
+  The rejected candidate has intact provenance and may be reused as a
+  boundary condition for future routing under similar congestion.
+
+handling_decision:
+  reuse_eligible: true
+  authorization_required: true
+  quarantine_required: false
+  disposal_requested: false
+  retention_action: retain
+  reuse_modes:
+    - boundary_condition
+    - model_routing
+  max_reuse_count: 3
+
+reassessment:
+  required: false
+
+validity:
+  valid_from: "2026-07-31T10:00:00+09:00"
+  valid_until: "2026-10-30T09:30:00+09:00"
+
+policy_refs:
+  - policy:residual-recovery:regional-routing-v1
