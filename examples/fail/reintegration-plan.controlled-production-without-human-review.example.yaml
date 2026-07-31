@@ -36,7 +36,7 @@ record_type: residual_reintegration_plan
 residual_binding:
   algorithm: sha256
   binding_mode: exact_content
-  digest: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  digest: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
 residual_id: residual:2026-07-31:thermal-output-001
 safety_controls:
   contamination_scan_required: true
@@ -50,7 +50,7 @@ safety_controls:
   human_review_required: false
   reviewer_role: facility_energy_operator
   rollback_required: true
-schema_version: 0.3.0
+schema_version: 0.4.0
 scope_control:
   allowed_operations:
   - read
