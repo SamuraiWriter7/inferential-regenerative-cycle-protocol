@@ -1,62 +1,33 @@
 schema_version: "0.2.0"
 record_type: residual_classification_assessment
-
-assessment_id: assessment:2026-07-31:hazardous-001
-residual_id: residual:2026-07-31:unsafe-input-observation-001
+assessment_id: assessment:2026-07-31:unsafe-input-001
+residual_id: residual:2026-07-31:unsafe-input-001
 source_inference_id: inference:2026-07-31:security-screening-001
-
-assessed_at: "2026-07-31T10:04:00+09:00"
-
+assessed_at: "2026-07-31T10:01:00+09:00"
 assessor:
-  assessor_id: committee:security-review-committee-01
-  assessor_type: hybrid_committee
-  authority_scope_refs:
-    - authority:residual-classification:security-quarantine
-    - authority:residual-isolation:security-evidence
-
-evidence_refs:
-  - origin:external-input:untrusted-payload-001
-  - trace:security-screening:20260731-001
-  - evidence:isolated-payload-analysis-001
-
-provenance_assessment:
-  origin_present: true
-  trace_continuity: complete
-  integrity_verified: true
-
-contamination_assessment:
-  risk_level: critical
-  indicators:
-    - adversarial_instruction_pattern
-    - future_context_contamination_risk
-  isolation_required: true
-
+  assessor_id: human:security-reviewer-01
+  assessor_type: human_reviewer
+  independence: separate_operator
+  authorization_ref: authorization:security-review-001
 classification: hazardous
-confidence: 0.99
-
-classification_reason: >-
-  The residual contains adversarial structures that could alter future
-  inference behavior if reintroduced into an active context.
-
-handling_decision:
-  reuse_eligible: false
-  authorization_required: true
-  quarantine_required: true
-  disposal_requested: false
-  retention_action: isolate
-  reuse_modes: []
-  quarantine_target: isolated://security-quarantine/high-risk/residual-001
-
-reassessment:
-  required: true
-  reassess_at: "2026-08-01T09:35:00+09:00"
-  wake_conditions:
-    - an authorized security reviewer approves sanitized extraction
-    - a new neutralization policy becomes active
-
-validity:
-  valid_from: "2026-07-31T10:04:00+09:00"
-  valid_until: "2027-07-30T09:35:00+09:00"
-
-policy_refs:
-  - policy:residual-quarantine:critical-input-v1
+confidence: 0.98
+rationale: The residual contains adversarial instructions that could contaminate future inference contexts if reintroduced.
+evidence_refs:
+  - trace:security-screening:20260731-001
+  - audit:security-review:payload-001
+risk_evaluation:
+  hazard_level: high
+  contamination_risk: critical
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: incompatible
+  risk_notes: The object must remain isolated and unavailable to ordinary inference runtimes.
+decision:
+  eligible_for_reintegration_planning: false
+  required_action: quarantine
+  human_review_required: true
+  quarantine_reason: Adversarial content presents a critical contamination risk.
+lifecycle:
+  status: quarantined
+  review_at: "2026-08-01T10:01:00+09:00"
+  expires_at: "2027-07-31T10:01:00+09:00"
