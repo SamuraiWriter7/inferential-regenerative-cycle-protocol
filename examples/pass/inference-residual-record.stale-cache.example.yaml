@@ -52,7 +52,6 @@ safety:
   requires_human_review: false
 
 preliminary_processing:
-  disposition: discard_requested
-  reuse_eligible: false
-  reason: >-
-    The cache entry is stale and has no valid downstream consumer.
+  disposition: pending_assessment
+  classification_eligible: true
+  reason: The stale cache entry should be evaluated before reuse.
