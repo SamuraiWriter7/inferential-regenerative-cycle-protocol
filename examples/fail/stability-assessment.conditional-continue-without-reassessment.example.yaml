@@ -1,0 +1,44 @@
+schema_version: 0.5.0
+record_type: cycle_stability_assessment
+stability_assessment_id: stability-assessment:2026-07-31:conditional-no-reassessment-001
+audit_id: audit:2026-07-31:thermal-recovery-001
+execution_receipt_id: execution-receipt:2026-07-31:thermal-recovery-001
+plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
+residual_id: residual:2026-07-31:thermal-output-001
+assessed_at: '2026-07-31T12:20:00+09:00'
+assessor:
+  assessor_id: service:thermal-cycle-stability-01
+  assessor_type: stability_service
+observation_window:
+  cycle_id: cycle:2026-07-31:thermal-recovery-001
+  started_at: '2026-07-31T11:00:00+09:00'
+  ended_at: '2026-07-31T12:15:00+09:00'
+  included_execution_receipt_refs:
+  - execution-receipt:2026-07-31:thermal-recovery-001
+  current_cycle_depth: 1
+  observed_reuse_count: 1
+signals:
+  contamination_status: clean
+  confidence_trend: stable
+  provenance_continuity: intact
+  authorization_continuity: intact
+  resource_pressure: moderate
+  feedback_amplification: low
+  benefit_persistence: partial
+  unresolved_disputes: 0
+thresholds:
+  maximum_cycle_depth: 1
+  maximum_reuse_count: 1
+  maximum_resource_pressure: moderate
+  maximum_feedback_amplification: low
+evaluation:
+  stability_status: conditionally_stable
+  violated_thresholds: []
+  rationale: The first transfer is safe, while continued operation requires another
+    measurement window.
+recommended_action: continue
+reassessment:
+  required: false
+assessment_integrity:
+  algorithm: sha256
+  digest: '6333333333333333333333333333333333333333333333333333333333333333'
