@@ -104,6 +104,35 @@ def validator_for_document(
     return validators.get(record_type)
 
 
+def is_classification_eligible(
+    residual: dict[str, Any],
+) -> bool:
+    """Return whether a residual may enter formal classification.
+
+    v0.2 records use ``classification_eligible``.  For repositories that
+    still contain v0.1 residual examples, ``reuse_eligible`` is interpreted
+    as a legacy field.  Quarantined and discard-requested v0.1 residuals
+    remain classifiable even though they were correctly marked as not
+    reusable.
+    """
+
+    processing = residual.get("preliminary_processing", {})
+
+    if "classification_eligible" in processing:
+        return bool(processing["classification_eligible"])
+
+    if "reuse_eligible" in processing:
+        if bool(processing["reuse_eligible"]):
+            return True
+
+        return processing.get("disposition") in {
+            "quarantined",
+            "discard_requested",
+        }
+
+    return False
+
+
 def collect_residual_semantic_errors(
     document: dict[str, Any],
 ) -> list[str]:
@@ -167,7 +196,7 @@ def collect_residual_semantic_errors(
             "safety.quarantine_reason: required when disposition is quarantined"
         )
 
-    if not processing["classification_eligible"]:
+    if not is_classification_eligible(document):
         if disposition == "pending_assessment":
             errors.append(
                 "preliminary_processing.classification_eligible: "
@@ -278,7 +307,7 @@ def collect_assessment_semantic_errors(
                 "assessed_at: cannot be earlier than referenced residual creation"
             )
 
-        if not residual["preliminary_processing"]["classification_eligible"]:
+        if not is_classification_eligible(residual):
             errors.append(
                 "residual_id: referenced residual is not classification eligible"
             )
