@@ -1,11 +1,12 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 record_type: inference_residual_record
-residual_id: residual:2026-07-31:route-candidate-001
+residual_id: residual:2026-07-31:rejected-route-001
 source_inference_id: inference:2026-07-31:route-planning-001
 origin_refs:
   - origin:request:regional-load-balancing-001
 trace_refs:
   - trace:inference:route-planning-001
+  - trace:candidate:route-b-001
 created_at: "2026-07-31T09:30:00+09:00"
 producer:
   producer_id: agent:regional-routing-agent-01
@@ -14,7 +15,7 @@ producer:
   model_id: local-routing-model-2.1
 residual_category: rejected_candidate
 residual_form: data
-summary: A rejected routing candidate that may define a useful congestion boundary.
+summary: A rejected route that reveals a useful congestion boundary.
 content_reference:
   reference_type: artifact_id
   value: artifact:route-candidate-b-20260731-001
@@ -38,7 +39,5 @@ safety:
 preliminary_processing:
   disposition: pending_assessment
   classification_eligible: true
-  reason: The residual has intact provenance and may proceed to classification.
-  next_assessment_after: "2026-07-31T09:35:00+09:00"
-extensions:
-  x-five-phase-origin: fire
+  reason: The route can be evaluated as a reusable boundary condition.
+  next_assessment_after: "2026-07-31T09:40:00+09:00"
