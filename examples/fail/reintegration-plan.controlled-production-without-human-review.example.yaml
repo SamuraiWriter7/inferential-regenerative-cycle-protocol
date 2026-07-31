@@ -1,0 +1,81 @@
+assessment_id: assessment:2026-07-31:thermal-output-001
+authorization_gate:
+  authorization_request_ref: authorization-request:thermal-recovery-20260731-001
+  execution_authorization_required: true
+  required_scope:
+  - thermal.transfer:district-heating-loop-01
+  status: requested
+expected_benefit:
+  benefit_types:
+  - thermal_recovery
+  estimated_value: 32.5
+  measurement_refs:
+  - measurement-plan:recovered-heat-kwh-001
+  value_unit: kWh_thermal
+lifecycle:
+  expires_at: '2026-08-01T10:34:00+09:00'
+  review_at: '2026-07-31T12:00:00+09:00'
+  status: ready_for_authorization
+objective: Route verified GPU cooling-loop heat into the district heating exchanger
+  within the approved temperature and flow envelope.
+plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
+planned_at: '2026-07-31T10:34:00+09:00'
+planner:
+  independence: separate_operator
+  planner_id: human:facility-energy-planner-01
+  planner_type: human_planner
+  planning_authority_ref: authority-scope:thermal-recovery-planning-01
+provenance_binding:
+  origin_refs:
+  - origin:workload:regional-forecast-001
+  preserve_origin_chain: true
+  trace_refs:
+  - trace:workload:regional-forecast-001
+  - trace:thermal:gpu-rack-01
+record_type: residual_reintegration_plan
+residual_binding:
+  algorithm: sha256
+  binding_mode: exact_content
+  digest: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+residual_id: residual:2026-07-31:thermal-output-001
+safety_controls:
+  contamination_scan_required: true
+  halt_conditions:
+  - origin_chain_break
+  - integrity_mismatch
+  - authorization_missing
+  - scope_violation
+  - target_state_changed
+  - human_stop_requested
+  human_review_required: false
+  reviewer_role: facility_energy_operator
+  rollback_required: true
+schema_version: 0.3.0
+scope_control:
+  allowed_operations:
+  - read
+  - transform
+  - transfer
+  environment: controlled_production
+  geographic_scope:
+  - JP-KANSAI
+  maximum_cycle_depth: 1
+  maximum_uses: 1
+  node_scope:
+  - node:regional-compute-site-01
+  prohibited_operations:
+  - execute_without_authorization
+  - modify_origin
+  - remove_trace
+  - expand_scope
+source_inference_id: inference:2026-07-31:gpu-workload-001
+target:
+  reuse_mode: thermal_recovery
+  target_id: system:district-heating-loop-01
+  target_state_ref: system:district-heating-state-20260731
+  target_type: physical_recovery_system
+transformation:
+  mode: convert
+  output_media_type: application/vnd.kazene.thermal-control+json
+  semantic_preservation_required: true
+  transformation_policy_ref: policy:thermal-control-conversion-01
