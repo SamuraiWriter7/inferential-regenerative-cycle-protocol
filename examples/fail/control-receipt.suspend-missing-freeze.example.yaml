@@ -1,0 +1,38 @@
+schema_version: 0.5.0
+record_type: regenerative_cycle_control_receipt
+control_receipt_id: control-receipt:2026-07-31:suspend-missing-freeze-001
+stability_assessment_id: stability-assessment:2026-07-31:cache-seed-001
+audit_id: audit:2026-07-31:cache-seed-001
+execution_receipt_id: execution-receipt:2026-07-31:cache-seed-001
+issued_at: '2026-07-31T11:50:00+09:00'
+controller:
+  controller_id: service:regional-cycle-controller-01
+  controller_type: cycle_controller
+  authority_scope_refs:
+  - authority-scope:cycle-control:regional-cache
+decision: suspend
+decision_basis:
+  stability_status: stable
+  audit_result: passed
+  trigger_refs:
+  - audit:2026-07-31:cache-seed-001
+  - stability-assessment:2026-07-31:cache-seed-001
+  rationale: The audited cycle is stable and may remain active within its existing
+    bounds.
+control_scope:
+  cycle_id: cycle:2026-07-31:cache-seed-001
+  target_id: cache:regional-route-features-01
+  effective_at: '2026-07-31T11:50:00+09:00'
+  expires_at: '2026-08-01T11:50:00+09:00'
+  affected_nodes:
+  - node:tokyo-edge-07
+required_actions:
+- action_type: revoke_authorization
+state_transition:
+  from_state: awaiting_audit
+  to_state: suspended
+authorization_binding:
+  required: false
+control_integrity:
+  algorithm: sha256
+  digest: '7111111111111111111111111111111111111111111111111111111111111111'
