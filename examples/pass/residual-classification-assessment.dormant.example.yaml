@@ -1,0 +1,59 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+
+assessment_id: assessment:2026-07-31:dormant-001
+residual_id: residual:2026-07-31:unused-evidence-001
+source_inference_id: inference:2026-07-31:regional-demand-analysis-001
+
+assessed_at: "2026-07-31T10:02:00+09:00"
+
+assessor:
+  assessor_id: agent:evidence-lifecycle-agent-01
+  assessor_type: ai_agent
+  authority_scope_refs:
+    - authority:residual-classification:evidence-lifecycle
+
+evidence_refs:
+  - origin:request:regional-demand-analysis-001
+  - trace:inference:regional-demand-analysis-001
+  - artifact:seasonal-demand-evidence-001
+
+provenance_assessment:
+  origin_present: true
+  trace_continuity: complete
+  integrity_verified: true
+
+contamination_assessment:
+  risk_level: none
+  indicators: []
+  isolation_required: false
+
+classification: dormant
+confidence: 0.88
+
+classification_reason: >-
+  The evidence is trustworthy but has no approved immediate use.
+  Winter demand conditions may make it relevant later.
+
+handling_decision:
+  reuse_eligible: false
+  authorization_required: false
+  quarantine_required: false
+  disposal_requested: false
+  retention_action: retain_dormant
+  reuse_modes: []
+
+reassessment:
+  required: true
+  reassess_at: "2026-11-01T09:50:00+09:00"
+  wake_conditions:
+    - winter demand planning begins
+    - regional demand variance exceeds fifteen percent
+    - an authorized analyst requests seasonal evidence
+
+validity:
+  valid_from: "2026-07-31T10:02:00+09:00"
+  valid_until: "2027-07-30T09:50:00+09:00"
+
+policy_refs:
+  - policy:residual-dormancy:seasonal-evidence-v1
