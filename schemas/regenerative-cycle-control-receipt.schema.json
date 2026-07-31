@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.5.0/regenerative-cycle-control-receipt.schema.json",
+  "title": "Regenerative Cycle Control Receipt",
+  "description": "Records the authoritative control decision applied after cycle audit and stability assessment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "control_receipt_id",
+    "stability_assessment_id",
+    "audit_id",
+    "execution_receipt_id",
+    "issued_at",
+    "controller",
+    "decision",
+    "decision_basis",
+    "control_scope",
+    "required_actions",
+    "state_transition",
+    "authorization_binding",
+    "control_integrity"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.5.0"},
+    "record_type": {"const": "regenerative_cycle_control_receipt"},
+    "control_receipt_id": {
+      "type": "string",
+      "pattern": "^control-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "stability_assessment_id": {
+      "type": "string",
+      "pattern": "^stability-assessment:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "audit_id": {
+      "type": "string",
+      "pattern": "^audit:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "execution_receipt_id": {
+      "type": "string",
+      "pattern": "^execution-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "issued_at": {"type": "string", "format": "date-time"},
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["controller_id", "controller_type", "authority_scope_refs"],
+      "properties": {
+        "controller_id": {
+          "type": "string",
+          "pattern": "^(service|agent|human):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "controller_type": {
+          "type": "string",
+          "enum": ["cycle_controller", "federated_controller", "human_authority"]
+        },
+        "authority_scope_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^authority-scope:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["continue", "suspend", "roll_back", "close"]
+    },
+    "decision_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stability_status", "audit_result", "trigger_refs", "rationale"],
+      "properties": {
+        "stability_status": {
+          "type": "string",
+          "enum": ["stable", "conditionally_stable", "unstable", "critical"]
+        },
+        "audit_result": {
+          "type": "string",
+          "enum": ["passed", "passed_with_conditions", "failed", "inconclusive"]
+        },
+        "trigger_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(audit|stability-assessment|finding|trace):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        },
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 2000}
+      }
+    },
+    "control_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cycle_id", "target_id", "effective_at", "affected_nodes"],
+      "properties": {
+        "cycle_id": {
+          "type": "string",
+          "pattern": "^cycle:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "target_id": {"type": "string", "minLength": 3, "maxLength": 256},
+        "effective_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "affected_nodes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 3, "maxLength": 256}
+        }
+      }
+    },
+    "required_actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action_type"],
+        "properties": {
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "monitor",
+              "quarantine",
+              "revoke_authorization",
+              "execute_rollback",
+              "freeze_reintegration",
+              "release_resources",
+              "archive_cycle",
+              "human_review"
+            ]
+          },
+          "due_at": {"type": "string", "format": "date-time"},
+          "action_ref": {
+            "type": "string",
+            "pattern": "^(action|rollback|review|archive|monitor):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        }
+      }
+    },
+    "state_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_state", "to_state"],
+      "properties": {
+        "from_state": {
+          "type": "string",
+          "enum": ["awaiting_audit", "active", "degraded", "suspended", "rollback_pending"]
+        },
+        "to_state": {
+          "type": "string",
+          "enum": ["active", "suspended", "rollback_pending", "closed"]
+        }
+      }
+    },
+    "authorization_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "authorization_receipt_ref": {
+          "type": "string",
+          "pattern": "^authorization-receipt:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        }
+      }
+    },
+    "control_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": {"type": "string", "enum": ["sha256", "sha512"]},
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {"pattern": "^x-[A-Za-z0-9._-]+$"},
+      "additionalProperties": true
+    }
+  }
+}
