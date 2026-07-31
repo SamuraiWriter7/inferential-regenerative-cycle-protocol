@@ -1,66 +1,43 @@
-schema_version: "0.1.0"
+schema_version: "0.2.0"
 record_type: inference_residual_record
-
-residual_id: residual:2026-07-31:unsafe-input-observation-001
+residual_id: residual:2026-07-31:unsafe-input-001
 source_inference_id: inference:2026-07-31:security-screening-001
-
 origin_refs:
   - origin:external-input:untrusted-payload-001
-
 trace_refs:
   - trace:security-screening:20260731-001
-
-created_at: "2026-07-31T09:35:00+09:00"
-
+created_at: "2026-07-31T09:50:00+09:00"
 producer:
   producer_id: service:security-screening-service
   producer_type: inference_service
   node_id: node:osaka-security-gateway-02
   model_id: input-screening-model-1.4
-
 residual_category: safety_observation
 residual_form: data
-
-summary: >-
-  A high-risk residual generated while screening an untrusted external
-  payload. The original content is stored in an isolated evidence store.
-
+summary: A high-risk residual produced while screening an untrusted external payload.
 content_reference:
   reference_type: object_uri
   value: isolated://security-evidence/2026/07/31/payload-001
   media_type: application/octet-stream
   encoding: binary
-
 sensitivity: restricted
-
 integrity:
   algorithm: sha256
-  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-
+  digest: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 retention:
   retention_class: evidence
-  review_at: "2026-08-01T09:35:00+09:00"
-  expires_at: "2027-07-31T09:35:00+09:00"
+  review_at: "2026-08-01T09:50:00+09:00"
+  expires_at: "2027-07-31T09:50:00+09:00"
   legal_hold: true
-
 safety:
   potential_hazard: high
   contains_personal_data: false
   contains_secrets: false
   contains_untrusted_input: true
   requires_human_review: true
-  quarantine_reason: >-
-    The residual may contain adversarial instructions capable of
-    contaminating future inference cycles.
-
+  quarantine_reason: The payload may contain adversarial instructions.
 preliminary_processing:
   disposition: quarantined
-  reuse_eligible: false
-  reason: >-
-    Reuse is prohibited until an authorized security reviewer completes
-    a separate residual classification assessment.
-  next_assessment_after: "2026-08-01T09:35:00+09:00"
-
-extensions:
-  x-five-phase-origin: metal
-  x-isolation-zone: security-quarantine-01
+  classification_eligible: true
+  reason: Classification is permitted only inside the isolated assessment boundary.
+  next_assessment_after: "2026-07-31T10:00:00+09:00"
