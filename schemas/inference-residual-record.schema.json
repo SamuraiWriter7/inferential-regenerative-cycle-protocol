@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.1.0/inference-residual-record.schema.json",
+  "title": "Inference Residual Record",
+  "description": "Records a residual resource, observation, byproduct, or unrealized value produced by an AI inference cycle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "residual_id",
+    "source_inference_id",
+    "origin_refs",
+    "created_at",
+    "producer",
+    "residual_category",
+    "residual_form",
+    "summary",
+    "content_reference",
+    "sensitivity",
+    "integrity",
+    "retention",
+    "safety",
+    "preliminary_processing"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "record_type": {
+      "const": "inference_residual_record"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "source_inference_id": {
+      "type": "string",
+      "pattern": "^inference:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "origin_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^origin:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+      }
+    },
+    "trace_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^trace:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+      },
+      "default": []
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_id",
+        "producer_type"
+      ],
+      "properties": {
+        "producer_id": {
+          "type": "string",
+          "pattern": "^(agent|service|human|device):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "producer_type": {
+          "type": "string",
+          "enum": [
+            "ai_agent",
+            "inference_service",
+            "human_operator",
+            "physical_device"
+          ]
+        },
+        "node_id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "runtime_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "residual_category": {
+      "type": "string",
+      "enum": [
+        "rejected_candidate",
+        "intermediate_result",
+        "failed_attempt",
+        "unused_evidence",
+        "discovered_constraint",
+        "safety_observation",
+        "cache_candidate",
+        "idle_capacity",
+        "thermal_byproduct",
+        "unallocated_value",
+        "other"
+      ]
+    },
+    "residual_form": {
+      "type": "string",
+      "enum": [
+        "data",
+        "computation",
+        "thermal",
+        "temporal",
+        "economic",
+        "operational"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "content_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference_type",
+        "value"
+      ],
+      "properties": {
+        "reference_type": {
+          "type": "string",
+          "enum": [
+            "inline_text",
+            "object_uri",
+            "artifact_id",
+            "digest_only"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128
+        },
+        "encoding": {
+          "type": "string",
+          "enum": [
+            "utf-8",
+            "binary",
+            "json",
+            "yaml",
+            "none"
+          ]
+        }
+      }
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ]
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "digest"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "sha256",
+            "sha512"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "retention_class"
+      ],
+      "properties": {
+        "retention_class": {
+          "type": "string",
+          "enum": [
+            "ephemeral",
+            "operational",
+            "evidence",
+            "archive"
+          ]
+        },
+        "review_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "legal_hold": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "potential_hazard",
+        "contains_personal_data",
+        "contains_secrets",
+        "contains_untrusted_input",
+        "requires_human_review"
+      ],
+      "properties": {
+        "potential_hazard": {
+          "type": "string",
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "contains_personal_data": {
+          "type": "boolean"
+        },
+        "contains_secrets": {
+          "type": "boolean"
+        },
+        "contains_untrusted_input": {
+          "type": "boolean"
+        },
+        "requires_human_review": {
+          "type": "boolean"
+        },
+        "quarantine_reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "preliminary_processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "reuse_eligible",
+        "reason"
+      ],
+      "properties": {
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "pending_assessment",
+            "quarantined",
+            "discard_requested"
+          ]
+        },
+        "reuse_eligible": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "next_assessment_after": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^x-[A-Za-z0-9._-]+$"
+      },
+      "additionalProperties": true
+    }
+  }
+}
