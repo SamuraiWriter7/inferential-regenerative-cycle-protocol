@@ -1,0 +1,550 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.2.0/residual-classification-assessment.schema.json",
+  "title": "Residual Classification Assessment",
+  "description": "Classifies an inference residual as recoverable, dormant, hazardous, or discardable and defines its permitted next handling state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "assessment_id",
+    "residual_id",
+    "source_inference_id",
+    "assessed_at",
+    "assessor",
+    "evidence_refs",
+    "provenance_assessment",
+    "contamination_assessment",
+    "classification",
+    "confidence",
+    "classification_reason",
+    "handling_decision",
+    "reassessment",
+    "validity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.2.0"
+    },
+    "record_type": {
+      "const": "residual_classification_assessment"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^assessment:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "residual_id": {
+      "type": "string",
+      "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "source_inference_id": {
+      "type": "string",
+      "pattern": "^inference:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+    },
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessor_id",
+        "assessor_type",
+        "authority_scope_refs"
+      ],
+      "properties": {
+        "assessor_id": {
+          "type": "string",
+          "pattern": "^(agent|service|human|committee):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+        },
+        "assessor_type": {
+          "type": "string",
+          "enum": [
+            "ai_agent",
+            "assessment_service",
+            "human_reviewer",
+            "hybrid_committee"
+          ]
+        },
+        "authority_scope_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^authority:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+          }
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(origin|trace|artifact|audit|evidence):[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+      }
+    },
+    "provenance_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin_present",
+        "trace_continuity",
+        "integrity_verified"
+      ],
+      "properties": {
+        "origin_present": {
+          "type": "boolean"
+        },
+        "trace_continuity": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "missing"
+          ]
+        },
+        "integrity_verified": {
+          "type": "boolean"
+        },
+        "provenance_notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "contamination_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "risk_level",
+        "indicators",
+        "isolation_required"
+      ],
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "indicators": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "isolation_required": {
+          "type": "boolean"
+        },
+        "assessment_notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "recoverable",
+        "dormant",
+        "hazardous",
+        "discardable"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "classification_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "handling_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reuse_eligible",
+        "authorization_required",
+        "quarantine_required",
+        "disposal_requested",
+        "retention_action",
+        "reuse_modes"
+      ],
+      "properties": {
+        "reuse_eligible": {
+          "type": "boolean"
+        },
+        "authorization_required": {
+          "type": "boolean"
+        },
+        "quarantine_required": {
+          "type": "boolean"
+        },
+        "disposal_requested": {
+          "type": "boolean"
+        },
+        "retention_action": {
+          "type": "string",
+          "enum": [
+            "retain",
+            "retain_dormant",
+            "isolate",
+            "secure_delete",
+            "anonymize_then_delete"
+          ]
+        },
+        "reuse_modes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "context_cache",
+              "boundary_condition",
+              "safety_rule",
+              "future_task",
+              "agent_handoff",
+              "model_routing",
+              "thermal_recovery",
+              "capacity_reallocation",
+              "royalty_reallocation"
+            ]
+          }
+        },
+        "max_reuse_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quarantine_target": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "disposal_method": {
+          "type": "string",
+          "enum": [
+            "secure_delete",
+            "anonymize_then_delete",
+            "physical_destruction",
+            "policy_defined"
+          ]
+        }
+      }
+    },
+    "reassessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "reassess_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "wake_conditions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid_from",
+        "valid_until"
+      ],
+      "properties": {
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "policy_refs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^policy:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^x-[A-Za-z0-9._-]+$"
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "recoverable"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "handling_decision": {
+            "properties": {
+              "reuse_eligible": {
+                "const": true
+              },
+              "authorization_required": {
+                "const": true
+              },
+              "quarantine_required": {
+                "const": false
+              },
+              "disposal_requested": {
+                "const": false
+              },
+              "retention_action": {
+                "const": "retain"
+              },
+              "reuse_modes": {
+                "minItems": 1
+              },
+              "max_reuse_count": {
+                "minimum": 1
+              }
+            },
+            "required": [
+              "max_reuse_count"
+            ]
+          },
+          "reassessment": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "dormant"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "handling_decision": {
+            "properties": {
+              "reuse_eligible": {
+                "const": false
+              },
+              "authorization_required": {
+                "const": false
+              },
+              "quarantine_required": {
+                "const": false
+              },
+              "disposal_requested": {
+                "const": false
+              },
+              "retention_action": {
+                "const": "retain_dormant"
+              },
+              "reuse_modes": {
+                "maxItems": 0
+              }
+            }
+          },
+          "reassessment": {
+            "properties": {
+              "required": {
+                "const": true
+              },
+              "wake_conditions": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "reassess_at",
+              "wake_conditions"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "hazardous"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "contamination_assessment": {
+            "properties": {
+              "risk_level": {
+                "enum": [
+                  "high",
+                  "critical"
+                ]
+              },
+              "indicators": {
+                "minItems": 1
+              },
+              "isolation_required": {
+                "const": true
+              }
+            }
+          },
+          "handling_decision": {
+            "properties": {
+              "reuse_eligible": {
+                "const": false
+              },
+              "authorization_required": {
+                "const": true
+              },
+              "quarantine_required": {
+                "const": true
+              },
+              "disposal_requested": {
+                "const": false
+              },
+              "retention_action": {
+                "const": "isolate"
+              },
+              "reuse_modes": {
+                "maxItems": 0
+              }
+            },
+            "required": [
+              "quarantine_target"
+            ]
+          },
+          "reassessment": {
+            "properties": {
+              "required": {
+                "const": true
+              },
+              "wake_conditions": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "reassess_at",
+              "wake_conditions"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification": {
+            "const": "discardable"
+          }
+        },
+        "required": [
+          "classification"
+        ]
+      },
+      "then": {
+        "properties": {
+          "contamination_assessment": {
+            "properties": {
+              "risk_level": {
+                "enum": [
+                  "none",
+                  "low",
+                  "medium"
+                ]
+              },
+              "isolation_required": {
+                "const": false
+              }
+            }
+          },
+          "handling_decision": {
+            "properties": {
+              "reuse_eligible": {
+                "const": false
+              },
+              "authorization_required": {
+                "const": true
+              },
+              "quarantine_required": {
+                "const": false
+              },
+              "disposal_requested": {
+                "const": true
+              },
+              "retention_action": {
+                "enum": [
+                  "secure_delete",
+                  "anonymize_then_delete"
+                ]
+              },
+              "reuse_modes": {
+                "maxItems": 0
+              }
+            },
+            "required": [
+              "disposal_method"
+            ]
+          },
+          "reassessment": {
+            "properties": {
+              "required": {
+                "const": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
