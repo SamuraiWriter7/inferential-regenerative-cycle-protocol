@@ -1,0 +1,173 @@
+=== Inferential Regenerative Cycle Protocol v0.3 Validation ===
+schema [inference-residual-record]: schemas/inference-residual-record.schema.json
+schema [residual-classification-assessment]: schemas/residual-classification-assessment.schema.json
+schema [residual-reintegration-plan]: schemas/residual-reintegration-plan.schema.json
+
+[validate-pass] examples/pass/inference-residual-record.cache-candidate.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/inference-residual-record.expired-cache.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/inference-residual-record.hazard-quarantined.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/inference-residual-record.rejected-candidate.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/inference-residual-record.thermal-byproduct.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/inference-residual-record.unused-evidence.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.cache-recoverable.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.discardable.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.dormant.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.hazardous.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.rejected-route-recoverable.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-classification-assessment.thermal-recoverable.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-reintegration-plan.cache-seed.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-reintegration-plan.route-boundary.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-pass] examples/pass/residual-reintegration-plan.thermal-recovery.example.yaml
+[schema-ok]
+[semantic-ok]
+
+[validate-fail] examples/fail/dormant-without-review.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - lifecycle.review_at: required for dormant classification
+
+[validate-fail] examples/fail/hazardous-with-reuse-target.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - candidate_reuse_targets: prohibited for hazardous classification
+
+[validate-fail] examples/fail/high-risk-not-quarantined.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - preliminary_processing.disposition: high-hazard residuals must be quarantined
+  - safety.requires_human_review: must be true for high-hazard residuals
+
+[validate-fail] examples/fail/missing-origin-reference.example.yaml
+[expected-schema-error]
+  - <root>: 'origin_refs' is a required property
+
+[validate-fail] examples/fail/recoverable-high-hazard.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - risk_evaluation.hazard_level: recoverable residuals require none or low
+  - risk_evaluation.contamination_risk: recoverable residuals require none or low
+
+[validate-fail] examples/fail/reintegration-plan.authorization-bypass.example.yaml
+[expected-schema-error]
+  - authorization_gate.status: 'authorized' is not one of ['not_requested', 'requested']
+
+[validate-fail] examples/fail/reintegration-plan.before-assessment.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - planned_at: cannot be earlier than referenced assessment
+
+[validate-fail] examples/fail/reintegration-plan.controlled-production-without-human-review.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - safety_controls.human_review_required: required by the referenced assessment
+  - safety_controls.human_review_required: controlled_production plans require human review
+
+[validate-fail] examples/fail/reintegration-plan.dormant-assessment.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - assessment_id: referenced assessment must classify the residual as recoverable
+  - assessment_id: referenced assessment is not eligible for reintegration planning
+  - assessment_id: referenced assessment must require approve_for_planning
+  - assessment_id: referenced assessment lifecycle must be active
+  - target: must exactly match a candidate_reuse_target in the referenced assessment
+
+[validate-fail] examples/fail/reintegration-plan.expired-before-planned.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - lifecycle.expires_at: must be later than planned_at
+  - lifecycle.review_at: must be earlier than expires_at
+
+[validate-fail] examples/fail/reintegration-plan.integrity-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - residual_binding.digest: must match referenced residual integrity
+
+[validate-fail] examples/fail/reintegration-plan.missing-halt-condition.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - safety_controls.halt_conditions: missing mandatory halt condition 'authorization_missing'
+
+[validate-fail] examples/fail/reintegration-plan.origin-mismatch.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - provenance_binding.origin_refs: must exactly preserve residual Origin references
+
+[validate-fail] examples/fail/reintegration-plan.ready-without-request.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - lifecycle.status: not_requested plans must remain draft
+
+[validate-fail] examples/fail/reintegration-plan.requested-without-ref.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - authorization_gate.authorization_request_ref: required when status is requested
+
+[validate-fail] examples/fail/reintegration-plan.self-target.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - target.target_id: cannot be the residual or source inference identifier
+  - target: must exactly match a candidate_reuse_target in the referenced assessment
+
+[validate-fail] examples/fail/reintegration-plan.target-not-approved.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - target.target_type: retrieval_cache requires cache_candidate or intermediate_result
+  - target: must exactly match a candidate_reuse_target in the referenced assessment
+  - expected_benefit.benefit_types: retrieval cache requires reduced_computation or reduced_latency
+
+[validate-fail] examples/fail/reintegration-plan.unknown-assessment.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - assessment_id: unknown referenced assessment 'assessment:2026-07-31:does-not-exist-001'
+
+[validate-fail] examples/fail/unknown-residual-reference.example.yaml
+[schema-ok]
+[expected-semantic-error]
+  - residual_id: unknown referenced residual 'residual:2026-07-31:does-not-exist-001'
+
+=== Validation Summary ===
+pass example failures: 0
+fail example failures: 0
+All examples behaved as expected.
