@@ -1,0 +1,50 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+
+assessment_id: assessment:2026-07-31:dormant-no-review-001
+residual_id: residual:2026-07-31:unused-evidence-001
+source_inference_id: inference:2026-07-31:regional-demand-analysis-001
+
+assessed_at: "2026-07-31T10:12:00+09:00"
+
+assessor:
+  assessor_id: agent:test-assessor-02
+  assessor_type: ai_agent
+  authority_scope_refs:
+    - authority:residual-classification:test
+
+evidence_refs:
+  - origin:request:regional-demand-analysis-001
+  - trace:inference:regional-demand-analysis-001
+
+provenance_assessment:
+  origin_present: true
+  trace_continuity: complete
+  integrity_verified: true
+
+contamination_assessment:
+  risk_level: none
+  indicators: []
+  isolation_required: false
+
+classification: dormant
+confidence: 0.90
+
+classification_reason: >-
+  This assessment is invalid because a dormant residual requires a
+  reassessment date and at least one wake condition.
+
+handling_decision:
+  reuse_eligible: false
+  authorization_required: false
+  quarantine_required: false
+  disposal_requested: false
+  retention_action: retain_dormant
+  reuse_modes: []
+
+reassessment:
+  required: false
+
+validity:
+  valid_from: "2026-07-31T10:12:00+09:00"
+  valid_until: "2027-01-31T10:12:00+09:00"
