@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.4.0/residual-classification-assessment.schema.json",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.5.0/residual-classification-assessment.schema.json",
   "title": "Residual Classification Assessment",
   "description": "Classifies an inference residual as recoverable, dormant, hazardous, or discardable and records the evidence and controls supporting that decision.",
   "type": "object",
@@ -22,7 +22,7 @@
     "lifecycle"
   ],
   "properties": {
-    "schema_version": {"const": "0.4.0"},
+    "schema_version": {"const": "0.5.0"},
     "record_type": {"const": "residual_classification_assessment"},
     "assessment_id": {
       "type": "string",
