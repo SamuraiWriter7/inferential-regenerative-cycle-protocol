@@ -1,4 +1,4 @@
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 record_type: residual_reintegration_plan
 plan_id: reintegration-plan:2026-07-31:route-boundary-001
 residual_id: residual:2026-07-31:rejected-route-001
@@ -18,7 +18,7 @@ target:
   target_state_ref: registry:routing-boundaries-state-20260731
 residual_binding:
   algorithm: sha256
-  digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  digest: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   binding_mode: exact_content
 provenance_binding:
   origin_refs:
@@ -61,9 +61,10 @@ safety_controls:
     - target_state_changed
 authorization_gate:
   execution_authorization_required: true
-  status: not_requested
+  status: requested
   required_scope:
     - registry.write:routing-boundaries-01
+  authorization_request_ref: authorization-request:route-boundary-20260731-001
 expected_benefit:
   benefit_types:
     - improved_reliability
@@ -71,6 +72,6 @@ expected_benefit:
   measurement_refs:
     - measurement-plan:routing-boundary-value-001
 lifecycle:
-  status: draft
+  status: ready_for_authorization
   review_at: "2026-08-03T10:30:00+09:00"
   expires_at: "2026-08-15T10:30:00+09:00"
