@@ -1,0 +1,28 @@
+schema_version: "0.2.0"
+record_type: residual_classification_assessment
+assessment_id: assessment:2026-07-31:unknown-residual-001
+residual_id: residual:2026-07-31:does-not-exist-001
+source_inference_id: inference:2026-07-31:unknown-001
+assessed_at: "2026-07-31T10:21:00+09:00"
+assessor:
+  assessor_id: service:residual-assessment-service-02
+  assessor_type: assessment_service
+  independence: separate_runtime
+classification: dormant
+confidence: 0.70
+rationale: This assessment is invalid because the referenced residual record does not exist.
+evidence_refs:
+  - trace:unknown:001
+risk_evaluation:
+  hazard_level: low
+  contamination_risk: low
+  provenance_status: partial
+  integrity_status: unverified
+  policy_compatibility: conditional
+decision:
+  eligible_for_reintegration_planning: false
+  required_action: retain_dormant
+  human_review_required: false
+lifecycle:
+  status: awaiting_review
+  review_at: "2026-08-31T10:21:00+09:00"
