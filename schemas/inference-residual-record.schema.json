@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.1.0/inference-residual-record.schema.json",
+  "$id": "https://kazene.org/schemas/inferential-regenerative-cycle-protocol/v0.2.0/inference-residual-record.schema.json",
   "title": "Inference Residual Record",
   "description": "Records a residual resource, observation, byproduct, or unrealized value produced by an AI inference cycle.",
   "type": "object",
@@ -24,12 +24,8 @@
     "preliminary_processing"
   ],
   "properties": {
-    "schema_version": {
-      "const": "0.1.0"
-    },
-    "record_type": {
-      "const": "inference_residual_record"
-    },
+    "schema_version": {"const": "0.2.0"},
+    "record_type": {"const": "inference_residual_record"},
     "residual_id": {
       "type": "string",
       "pattern": "^residual:[A-Za-z0-9][A-Za-z0-9._:/-]{2,255}$"
@@ -56,17 +52,11 @@
       },
       "default": []
     },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
+    "created_at": {"type": "string", "format": "date-time"},
     "producer": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "producer_id",
-        "producer_type"
-      ],
+      "required": ["producer_id", "producer_type"],
       "properties": {
         "producer_id": {
           "type": "string",
@@ -74,28 +64,11 @@
         },
         "producer_type": {
           "type": "string",
-          "enum": [
-            "ai_agent",
-            "inference_service",
-            "human_operator",
-            "physical_device"
-          ]
+          "enum": ["ai_agent", "inference_service", "human_operator", "physical_device"]
         },
-        "node_id": {
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 256
-        },
-        "model_id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256
-        },
-        "runtime_id": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256
-        }
+        "node_id": {"type": "string", "minLength": 3, "maxLength": 256},
+        "model_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "runtime_id": {"type": "string", "minLength": 1, "maxLength": 256}
       }
     },
     "residual_category": {
@@ -116,83 +89,33 @@
     },
     "residual_form": {
       "type": "string",
-      "enum": [
-        "data",
-        "computation",
-        "thermal",
-        "temporal",
-        "economic",
-        "operational"
-      ]
+      "enum": ["data", "computation", "thermal", "temporal", "economic", "operational"]
     },
-    "summary": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000
-    },
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
     "content_reference": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "reference_type",
-        "value"
-      ],
+      "required": ["reference_type", "value"],
       "properties": {
         "reference_type": {
           "type": "string",
-          "enum": [
-            "inline_text",
-            "object_uri",
-            "artifact_id",
-            "digest_only"
-          ]
+          "enum": ["inline_text", "object_uri", "artifact_id", "digest_only"]
         },
-        "value": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 4096
-        },
-        "media_type": {
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 128
-        },
-        "encoding": {
-          "type": "string",
-          "enum": [
-            "utf-8",
-            "binary",
-            "json",
-            "yaml",
-            "none"
-          ]
-        }
+        "value": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "media_type": {"type": "string", "minLength": 3, "maxLength": 128},
+        "encoding": {"type": "string", "enum": ["utf-8", "binary", "json", "yaml", "none"]}
       }
     },
     "sensitivity": {
       "type": "string",
-      "enum": [
-        "public",
-        "internal",
-        "confidential",
-        "restricted"
-      ]
+      "enum": ["public", "internal", "confidential", "restricted"]
     },
     "integrity": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "algorithm",
-        "digest"
-      ],
+      "required": ["algorithm", "digest"],
       "properties": {
-        "algorithm": {
-          "type": "string",
-          "enum": [
-            "sha256",
-            "sha512"
-          ]
-        },
+        "algorithm": {"type": "string", "enum": ["sha256", "sha512"]},
         "digest": {
           "type": "string",
           "pattern": "^[A-Fa-f0-9]{64}([A-Fa-f0-9]{64})?$"
@@ -202,31 +125,15 @@
     "retention": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "retention_class"
-      ],
+      "required": ["retention_class"],
       "properties": {
         "retention_class": {
           "type": "string",
-          "enum": [
-            "ephemeral",
-            "operational",
-            "evidence",
-            "archive"
-          ]
+          "enum": ["ephemeral", "operational", "evidence", "archive"]
         },
-        "review_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "expires_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "legal_hold": {
-          "type": "boolean",
-          "default": false
-        }
+        "review_at": {"type": "string", "format": "date-time"},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "legal_hold": {"type": "boolean", "default": false}
       }
     },
     "safety": {
@@ -242,69 +149,32 @@
       "properties": {
         "potential_hazard": {
           "type": "string",
-          "enum": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "critical"
-          ]
+          "enum": ["none", "low", "medium", "high", "critical"]
         },
-        "contains_personal_data": {
-          "type": "boolean"
-        },
-        "contains_secrets": {
-          "type": "boolean"
-        },
-        "contains_untrusted_input": {
-          "type": "boolean"
-        },
-        "requires_human_review": {
-          "type": "boolean"
-        },
-        "quarantine_reason": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000
-        }
+        "contains_personal_data": {"type": "boolean"},
+        "contains_secrets": {"type": "boolean"},
+        "contains_untrusted_input": {"type": "boolean"},
+        "requires_human_review": {"type": "boolean"},
+        "quarantine_reason": {"type": "string", "minLength": 1, "maxLength": 1000}
       }
     },
     "preliminary_processing": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "disposition",
-        "reuse_eligible",
-        "reason"
-      ],
+      "required": ["disposition", "classification_eligible", "reason"],
       "properties": {
         "disposition": {
           "type": "string",
-          "enum": [
-            "pending_assessment",
-            "quarantined",
-            "discard_requested"
-          ]
+          "enum": ["pending_assessment", "quarantined", "discard_requested"]
         },
-        "reuse_eligible": {
-          "type": "boolean"
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1000
-        },
-        "next_assessment_after": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "classification_eligible": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "next_assessment_after": {"type": "string", "format": "date-time"}
       }
     },
     "extensions": {
       "type": "object",
-      "propertyNames": {
-        "pattern": "^x-[A-Za-z0-9._-]+$"
-      },
+      "propertyNames": {"pattern": "^x-[A-Za-z0-9._-]+$"},
       "additionalProperties": true
     }
   }
