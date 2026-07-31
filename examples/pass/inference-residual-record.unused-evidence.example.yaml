@@ -1,33 +1,32 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 record_type: inference_residual_record
 residual_id: residual:2026-07-31:unused-evidence-001
-source_inference_id: inference:2026-07-31:market-analysis-001
+source_inference_id: inference:2026-07-31:demand-analysis-001
 origin_refs:
-  - origin:request:market-analysis-001
+  - origin:request:regional-demand-analysis-001
 trace_refs:
-  - trace:retrieval:market-analysis-001
-created_at: "2026-07-31T09:40:00+09:00"
+  - trace:retrieval:demand-evidence-001
+created_at: "2026-07-31T09:36:00+09:00"
 producer:
-  producer_id: service:analysis-service-01
-  producer_type: inference_service
-  node_id: node:nagoya-edge-02
-  model_id: analysis-model-3.0
+  producer_id: agent:demand-analysis-agent
+  producer_type: ai_agent
+  node_id: node:osaka-edge-03
 residual_category: unused_evidence
 residual_form: data
-summary: Evidence excluded from the current result because its relevance is not yet established.
+summary: Evidence not needed for the current answer but potentially useful later.
 content_reference:
   reference_type: artifact_id
-  value: artifact:unused-evidence-20260731-001
+  value: artifact:unused-demand-evidence-001
   media_type: application/json
   encoding: json
 sensitivity: internal
 integrity:
   algorithm: sha256
-  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  digest: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 retention:
-  retention_class: archive
-  review_at: "2026-09-01T09:40:00+09:00"
-  expires_at: "2027-07-31T09:40:00+09:00"
+  retention_class: operational
+  review_at: "2026-08-31T09:36:00+09:00"
+  expires_at: "2026-12-31T09:36:00+09:00"
   legal_hold: false
 safety:
   potential_hazard: low
@@ -38,5 +37,5 @@ safety:
 preliminary_processing:
   disposition: pending_assessment
   classification_eligible: true
-  reason: The evidence may become relevant after future corroboration.
-  next_assessment_after: "2026-07-31T09:45:00+09:00"
+  reason: The evidence should remain available for later reassessment.
+  next_assessment_after: "2026-07-31T09:46:00+09:00"
