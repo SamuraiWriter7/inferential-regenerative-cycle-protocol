@@ -1,0 +1,57 @@
+schema_version: "0.3.0"
+record_type: inference_residual_record
+
+residual_id: residual:2026-07-31:route-cache-001
+source_inference_id: inference:2026-07-31:route-cache-build-001
+
+origin_refs:
+  - origin:request:regional-route-cache-001
+
+trace_refs:
+  - trace:inference:route-cache-build-001
+
+created_at: "2026-07-31T09:32:00+09:00"
+
+producer:
+  producer_id: service:route-cache-builder
+  producer_type: inference_service
+  node_id: node:tokyo-edge-07
+  model_id: route-cache-model-1.2
+
+residual_category: cache_candidate
+residual_form: computation
+
+summary: >-
+  Verified intermediate route features suitable for a bounded cache seed.
+
+content_reference:
+  reference_type: artifact_id
+  value: artifact:route-cache-features-20260731-001
+  media_type: application/json
+  encoding: json
+
+sensitivity: internal
+
+integrity:
+  algorithm: sha256
+  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+retention:
+  retention_class: operational
+  review_at: "2026-08-03T09:32:00+09:00"
+  expires_at: "2026-09-30T09:32:00+09:00"
+  legal_hold: false
+
+safety:
+  potential_hazard: low
+  contains_personal_data: false
+  contains_secrets: false
+  contains_untrusted_input: false
+  requires_human_review: false
+
+preliminary_processing:
+  disposition: pending_assessment
+  classification_eligible: true
+  reason: >-
+    The computation can be assessed for controlled cache reuse.
+  next_assessment_after: "2026-07-31T09:42:00+09:00"
