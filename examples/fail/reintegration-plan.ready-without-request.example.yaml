@@ -1,0 +1,80 @@
+assessment_id: assessment:2026-07-31:route-cache-001
+authorization_gate:
+  execution_authorization_required: true
+  required_scope:
+  - cache.write:regional-route-features-01
+  status: not_requested
+expected_benefit:
+  benefit_types:
+  - reduced_computation
+  - reduced_latency
+  estimated_value: 420
+  measurement_refs:
+  - measurement-plan:route-cache-efficiency-001
+  value_unit: avoided_tokens_per_query
+lifecycle:
+  expires_at: '2026-08-10T10:32:00+09:00'
+  review_at: '2026-08-02T10:32:00+09:00'
+  status: ready_for_authorization
+objective: Seed a bounded regional route cache with verified intermediate features
+  to reduce repeated computation and latency.
+plan_id: reintegration-plan:2026-07-31:cache-seed-001
+planned_at: '2026-07-31T10:32:00+09:00'
+planner:
+  independence: separate_runtime
+  planner_id: service:residual-reintegration-planner
+  planner_type: planning_service
+  planning_authority_ref: authority-scope:reintegration-planning-01
+provenance_binding:
+  origin_refs:
+  - origin:request:regional-route-cache-001
+  preserve_origin_chain: true
+  trace_refs:
+  - trace:inference:route-cache-build-001
+record_type: residual_reintegration_plan
+residual_binding:
+  algorithm: sha256
+  binding_mode: exact_content
+  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+residual_id: residual:2026-07-31:route-cache-001
+safety_controls:
+  contamination_scan_required: true
+  halt_conditions:
+  - origin_chain_break
+  - integrity_mismatch
+  - authorization_missing
+  - scope_violation
+  - maximum_use_exceeded
+  - maximum_cycle_depth_exceeded
+  - confidence_degradation
+  human_review_required: false
+  rollback_required: true
+schema_version: 0.3.0
+scope_control:
+  allowed_operations:
+  - read
+  - transform
+  - cache
+  environment: isolated_runtime
+  geographic_scope:
+  - JP-KANTO
+  maximum_cycle_depth: 3
+  maximum_uses: 100
+  node_scope:
+  - node:tokyo-edge-07
+  prohibited_operations:
+  - execute_without_authorization
+  - modify_origin
+  - remove_trace
+  - expand_scope
+source_inference_id: inference:2026-07-31:route-cache-build-001
+target:
+  reuse_mode: cache_seed
+  target_id: cache:regional-route-features-01
+  target_state_ref: context:regional-route-cache-state-001
+  target_type: retrieval_cache
+transformation:
+  mode: compress
+  output_media_type: application/json
+  semantic_preservation_required: true
+  transformation_policy_ref: policy:cache-compression-01
