@@ -1,4 +1,4 @@
-schema_version: "0.4.0"
+schema_version: "0.5.0"
 record_type: residual_reintegration_plan
 plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
 residual_id: residual:2026-07-31:thermal-output-001
