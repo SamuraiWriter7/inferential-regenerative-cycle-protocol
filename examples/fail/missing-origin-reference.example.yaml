@@ -1,0 +1,41 @@
+schema_version: "0.1.0"
+record_type: inference_residual_record
+
+residual_id: residual:2026-07-31:missing-origin-001
+source_inference_id: inference:2026-07-31:test-001
+
+created_at: "2026-07-31T09:40:00+09:00"
+
+producer:
+  producer_id: agent:test-agent
+  producer_type: ai_agent
+
+residual_category: intermediate_result
+residual_form: data
+
+summary: This record is invalid because origin_refs is missing.
+
+content_reference:
+  reference_type: artifact_id
+  value: artifact:test-intermediate-result
+
+sensitivity: internal
+
+integrity:
+  algorithm: sha256
+  digest: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+retention:
+  retention_class: ephemeral
+
+safety:
+  potential_hazard: none
+  contains_personal_data: false
+  contains_secrets: false
+  contains_untrusted_input: false
+  requires_human_review: false
+
+preliminary_processing:
+  disposition: pending_assessment
+  reuse_eligible: true
+  reason: Awaiting classification.
