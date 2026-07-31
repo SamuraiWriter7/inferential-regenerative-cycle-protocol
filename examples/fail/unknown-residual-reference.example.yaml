@@ -1,28 +1,37 @@
-schema_version: "0.2.0"
+schema_version: 0.3.0
 record_type: residual_classification_assessment
-assessment_id: assessment:2026-07-31:unknown-residual-001
+assessment_id: assessment:2026-07-31:rejected-route-001
 residual_id: residual:2026-07-31:does-not-exist-001
-source_inference_id: inference:2026-07-31:unknown-001
-assessed_at: "2026-07-31T10:21:00+09:00"
+source_inference_id: inference:2026-07-31:route-planning-001
+assessed_at: '2026-07-31T10:00:00+09:00'
 assessor:
-  assessor_id: service:residual-assessment-service-02
+  assessor_id: service:residual-assessment-service
   assessor_type: assessment_service
   independence: separate_runtime
-classification: dormant
-confidence: 0.70
-rationale: This assessment is invalid because the referenced residual record does not exist.
+classification: recoverable
+confidence: 0.93
+rationale: The rejected route preserves verified provenance and exposes a useful congestion
+  boundary without material contamination risk.
 evidence_refs:
-  - trace:unknown:001
+- trace:candidate:route-b-001
+- audit:route-candidate-integrity-001
 risk_evaluation:
   hazard_level: low
   contamination_risk: low
-  provenance_status: partial
-  integrity_status: unverified
-  policy_compatibility: conditional
+  provenance_status: verified
+  integrity_status: verified
+  policy_compatibility: compatible
+candidate_reuse_targets:
+- target_type: boundary_condition_registry
+  target_id: registry:routing-boundaries-01
+  reuse_mode: constraint
 decision:
-  eligible_for_reintegration_planning: false
-  required_action: retain_dormant
+  eligible_for_reintegration_planning: true
+  required_action: approve_for_planning
   human_review_required: false
+  reuse_constraints:
+  - Preserve the original route trace and congestion timestamp.
 lifecycle:
-  status: awaiting_review
-  review_at: "2026-08-31T10:21:00+09:00"
+  status: active
+  review_at: '2026-08-15T10:00:00+09:00'
+  expires_at: '2026-10-15T10:00:00+09:00'
