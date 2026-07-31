@@ -1,0 +1,89 @@
+schema_version: 0.4.0
+record_type: regenerative_cycle_execution_receipt
+receipt_id: execution-receipt:fail:missing-human-review
+plan_id: reintegration-plan:2026-07-31:thermal-recovery-001
+residual_id: residual:2026-07-31:thermal-output-001
+assessment_id: assessment:2026-07-31:thermal-output-001
+source_inference_id: inference:2026-07-31:gpu-workload-001
+recorded_at: '2026-07-31T11:45:00+09:00'
+authorization_binding:
+  authorization_request_ref: authorization-request:thermal-recovery-20260731-001
+  authorization_receipt_ref: authorization-receipt:thermal-recovery-20260731-001
+  decision: authorized
+  authorized_at: '2026-07-31T10:45:00+09:00'
+  authorizer_id: human:facility-energy-authorizer-01
+  authorized_operations:
+  - read
+  - transform
+  - transfer
+  authorized_environment: controlled_production
+  authorized_scope:
+  - thermal.transfer:district-heating-loop-01
+  expires_at: '2026-07-31T13:00:00+09:00'
+execution:
+  execution_id: execution:2026-07-31:thermal-recovery-001
+  executor:
+    executor_id: device:thermal-transfer-controller-01
+    executor_type: physical_device
+    runtime_id: runtime:thermal-transfer-20260731-001
+    node_id: node:regional-compute-site-01
+  started_at: '2026-07-31T11:00:00+09:00'
+  completed_at: '2026-07-31T11:35:00+09:00'
+  status: completed
+  operations_performed:
+  - read
+  - transform
+  - transfer
+  use_count: 1
+  cycle_depth: 1
+  input_integrity:
+    algorithm: sha256
+    digest: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  output_ref: metric:recovered-heat-batch-20260731-001
+  output_integrity:
+    algorithm: sha256
+    digest: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+target_observation:
+  target_type: physical_recovery_system
+  target_id: system:district-heating-loop-01
+  reuse_mode: thermal_recovery
+  target_update_status: applied
+  before_state_ref: system:district-heating-state-20260731
+  after_state_ref: system:district-heating-state-20260731-1135
+provenance_observation:
+  origin_refs:
+  - origin:workload:regional-forecast-001
+  trace_refs:
+  - trace:workload:regional-forecast-001
+  - trace:thermal:gpu-rack-01
+  generated_trace_refs:
+  - trace:reintegration:thermal-recovery-001
+  preserve_origin_chain: true
+scope_observation:
+  environment: controlled_production
+  node_id: node:regional-compute-site-01
+  geographic_scope:
+  - JP-KANSAI
+safety_observation:
+  contamination_scan_result: clean
+  triggered_halt_conditions: []
+  rollback_status: available
+  unauthorized_effects_detected: false
+benefit_realization:
+  status: realized
+  benefit_types:
+  - thermal_recovery
+  observed_metrics:
+  - metric_name: recovered_heat
+    value: 31.8
+    unit: kWh_thermal
+    measurement_ref: metric:recovered-heat-kwh-001
+outcome:
+  audit_required: true
+  next_action: submit_for_audit
+  generated_residual_refs:
+  - residual:2026-07-31:thermal-transfer-telemetry-001
+  outcome_summary: Authorized GPU heat was transferred into the district heating loop.
+receipt_integrity:
+  algorithm: sha256
+  digest: "4333333333333333333333333333333333333333333333333333333333333333"
