@@ -1,31 +1,30 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 record_type: residual_classification_assessment
 assessment_id: assessment:2026-07-31:expired-cache-001
 residual_id: residual:2026-07-31:expired-cache-001
-source_inference_id: inference:2026-07-31:cache-refresh-001
+source_inference_id: inference:2026-07-31:legacy-cache-review-001
 assessed_at: "2026-07-31T10:10:00+09:00"
 assessor:
-  assessor_id: service:cache-assessment-service
+  assessor_id: service:cache-maintenance-service
   assessor_type: assessment_service
   independence: separate_runtime
 classification: discardable
 confidence: 0.96
-rationale: The cache entry is superseded, has no evidentiary hold, and would introduce stale information if reused.
+rationale: The artifact is obsolete, has no compatible target, and preserving it would add storage cost without recoverable operational value.
 evidence_refs:
-  - trace:cache:refresh-001
-  - metric:freshness:expired-cache-001
+  - trace:cache:legacy-routing-001
+  - audit:legacy-cache-compatibility-001
 risk_evaluation:
   hazard_level: low
-  contamination_risk: medium
+  contamination_risk: low
   provenance_status: verified
   integrity_status: verified
   policy_compatibility: incompatible
-  risk_notes: Secure deletion is permitted after the retention checkpoint.
 decision:
   eligible_for_reintegration_planning: false
   required_action: discard
   human_review_required: false
-  discard_reason: The superseded cache entry has no safe or legitimate future use.
+  discard_reason: No supported runtime can consume the obsolete cache format.
 lifecycle:
   status: awaiting_disposal
-  expires_at: "2026-08-01T10:10:00+09:00"
+  expires_at: "2026-08-31T10:10:00+09:00"
