@@ -1,0 +1,50 @@
+schema_version: "0.5.0"
+record_type: regenerative_cycle_audit_record
+audit_id: audit:2026-07-31:route-boundary-001
+execution_receipt_id: execution-receipt:2026-07-31:route-boundary-001
+plan_id: reintegration-plan:2026-07-31:route-boundary-001
+residual_id: residual:2026-07-31:rejected-route-001
+audited_at: "2026-07-31T11:40:00+09:00"
+auditor:
+  auditor_id: agent:boundary-safety-auditor-01
+  auditor_type: independent_agent
+  independence: independent
+evidence_refs:
+  - execution-receipt:2026-07-31:route-boundary-001
+  - authorization-receipt:route-boundary-20260731-001
+  - trace:reintegration:route-boundary-halt-001
+authorization_verification:
+  request_match: true
+  receipt_verified: true
+  decision_valid: true
+  scope_match: true
+  time_valid: true
+execution_verification:
+  plan_match: true
+  target_match: true
+  operations_match: true
+  provenance_match: true
+  integrity_match: true
+  status_match: true
+contamination_assessment:
+  status: clean
+  contamination_refs: []
+  propagation_scope: none
+  isolation_status: not_required
+benefit_verification:
+  status: unverified
+  verified_metrics: []
+findings:
+  - finding_id: finding:2026-07-31:target-state-changed-001
+    severity: low
+    category: runtime
+    summary: The target changed after authorization, and execution halted before modification.
+    evidence_refs: [trace:reintegration:route-boundary-halt-001]
+    resolution_status: resolved
+audit_conclusion:
+  result: passed_with_conditions
+  recommended_control: close
+  rationale: The safe halt preserved scope and provenance; the obsolete plan should be closed and reassessed separately.
+audit_integrity:
+  algorithm: sha256
+  digest: "5222222222222222222222222222222222222222222222222222222222222222"
