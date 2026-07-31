@@ -33,7 +33,7 @@ record_type: residual_reintegration_plan
 residual_binding:
   algorithm: sha256
   binding_mode: exact_content
-  digest: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+  digest: "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
 residual_id: residual:2026-07-31:unused-evidence-001
 safety_controls:
   contamination_scan_required: true
@@ -47,7 +47,7 @@ safety_controls:
   - target_state_changed
   human_review_required: false
   rollback_required: true
-schema_version: 0.3.0
+schema_version: 0.4.0
 scope_control:
   allowed_operations:
   - read
@@ -74,3 +74,4 @@ transformation:
   output_media_type: application/json
   semantic_preservation_required: true
   transformation_policy_ref: policy:constraint-normalization-01
+
