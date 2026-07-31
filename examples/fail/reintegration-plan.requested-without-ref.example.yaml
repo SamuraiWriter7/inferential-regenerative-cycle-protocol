@@ -35,7 +35,7 @@ record_type: residual_reintegration_plan
 residual_binding:
   algorithm: sha256
   binding_mode: exact_content
-  digest: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  digest: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 residual_id: residual:2026-07-31:route-cache-001
 safety_controls:
   contamination_scan_required: true
@@ -49,7 +49,7 @@ safety_controls:
   - confidence_degradation
   human_review_required: false
   rollback_required: true
-schema_version: 0.3.0
+schema_version: 0.4.0
 scope_control:
   allowed_operations:
   - read
